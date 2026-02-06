@@ -1,0 +1,44 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+__debug_*
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+.netrc
+.env
+.env.*
+!.env.example
+
+
+# Go workspace (optional)
+go.work
+go.work.sum
+
+# Build output
+bin/
+build/
+dist/
+
+# Coverage & profiling
+coverage.*
+*.coverprofile
+*.pprof
+*.prof
+profile.out
+
+# Logs
+*.log
+
+# IDE/editor
+.idea/
+
+# OS cruft
+.DS_Store
