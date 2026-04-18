@@ -1,0 +1,84 @@
+package auth
+
+import (
+	"fantacode/ecomm/internal/admsvr/ui/components/button"
+	"fantacode/ecomm/internal/admsvr/ui/components/form"
+	"fantacode/ecomm/internal/admsvr/ui/components/input"
+	"fantacode/ecomm/internal/admsvr/ui/layout"
+	"fantacode/ecomm/internal/biz/l10n"
+	. "github.com/colafanta/go-opera"
+	"github.com/gofiber/fiber/v3"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+)
+
+templ LoginPage(c fiber.Ctx) {
+	{{ t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer) }}
+	@layout.LandingLayout() {
+		<div class="h-full flex justify-center items-center">
+			<div class="flex flex-col gap-4 items-center justify-center px-4 w-full max-w-2xl">
+				<form
+					hx-boost="true"
+					hx-swap="none"
+					method="post"
+					action="/auth/unpw/login"
+					class="flex flex-col gap-3 min-w-sm"
+					_="on htmx:afterRequest
+						if event.detail.successful then
+							set window.location.href to '/api'
+						end"
+				>
+					<div class="flex flex-col items-center gap-1 text-center">
+						<h1 class="text-2xl font-bold">{ Must(t.LocalizeMessage(&i18n.Message{ID: "Login"})) }</h1>
+						<p class="text-muted-foreground text-sm text-balance">{ Must(t.LocalizeMessage(&i18n.Message{ID: "LoginWithUnpw"})) }</p>
+					</div>
+					@form.Item() {
+						@form.Label(form.LabelProps{
+							For: "username-input",
+						}) {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "Username"})) }
+						}
+						@input.Input(input.Props{
+							ID:          "username-input",
+							Name:        "user",
+							Type:        input.TypeText,
+							Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "InputUsernameHere"})),
+							Attributes: templ.Attributes{
+								"required": true,
+								"pattern":  "[a-zA-Z0-9_\\-]+",
+							},
+						})
+					}
+					@form.Item() {
+						@form.Label(form.LabelProps{
+							For: "password-input",
+						}) {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "Password"})) }
+						}
+						@input.Input(input.Props{
+							ID:          "password-input",
+							Name:        "passwd",
+							Type:        input.TypePassword,
+							Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "InputPasswordHere"})),
+							Attributes: templ.Attributes{
+								"required":  true,
+								"minlength": "8",
+							},
+						})
+					}
+					@form.Item() {
+						@button.Button(button.Props{
+							Class: "w-full",
+							Type:  button.TypeSubmit,
+						}) {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "Login"})) }
+						}
+					}
+				</form>
+				<p data-slot="field-description" class="text-muted-foreground text-sm leading-normal font-normal group-has-data-[orientation=horizontal]/field:text-balance last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&amp;]:-mt-1.5 [&amp;&gt;a:hover]:text-primary [&amp;&gt;a]:underline [&amp;&gt;a]:underline-offset-4 text-center">
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "DontHaveAccount"})) }
+					<a href="/signup" class="underline underline-offset-4">{ Must(t.LocalizeMessage(&i18n.Message{ID: "SignUp"})) }</a>
+				</p>
+			</div>
+		</div>
+	}
+}

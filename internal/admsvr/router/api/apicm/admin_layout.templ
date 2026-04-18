@@ -1,0 +1,279 @@
+package apicm
+
+import (
+	"fantacode/ecomm/internal/admsvr/ui/block"
+	"fantacode/ecomm/internal/admsvr/ui/components/avatar"
+	"fantacode/ecomm/internal/admsvr/ui/components/breadcrumb"
+	"fantacode/ecomm/internal/admsvr/ui/components/collapsible"
+	"fantacode/ecomm/internal/admsvr/ui/components/dropdown"
+	"fantacode/ecomm/internal/admsvr/ui/components/icon"
+	"fantacode/ecomm/internal/admsvr/ui/components/sidebar"
+	"fantacode/ecomm/internal/admsvr/ui/layout"
+	"fantacode/ecomm/internal/biz/auth"
+	"fantacode/ecomm/internal/biz/l10n"
+	. "github.com/colafanta/go-opera"
+	"github.com/go-pkgz/auth/v2/token"
+	"github.com/gofiber/fiber/v3"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/samber/lo"
+	"strings"
+)
+
+templ AdminLayout(c fiber.Ctx) {
+	{{ t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer) }}
+	@layout.BaseLayout() {
+		@sidebar.Layout() {
+			@sidebar.Sidebar(sidebar.Props{
+				Collapsible: sidebar.CollapsibleIcon,
+				Variant:     sidebar.VariantFloating,
+			}) {
+				@sidebar.Header() {
+					@sidebar.Menu() {
+						@sidebar.MenuItem() {
+							@sidebar.MenuButton(sidebar.MenuButtonProps{
+								Href: "#",
+							}) {
+								@icon.LayoutPanelLeft(icon.Props{Class: "size-4"})
+								<span class="text-xl"><span class="font-bold">Fanta</span>Code</span>
+							}
+						}
+					}
+				}
+				@sidebar.Content() {
+					@sidebar.Group() {
+						@sidebar.GroupLabel() {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "Platform"})) }
+						}
+						@sidebar.Menu() {
+							@sidebar.MenuItem() {
+								@sidebar.MenuButton(sidebar.MenuButtonProps{
+									Href:     ApiBasePath + "/dashboard",
+									Tooltip:  Must(t.LocalizeMessage(&i18n.Message{ID: "Dashboard"})),
+									IsActive: c.Path() == ApiBasePath+"/dashboard",
+								}) {
+									@icon.House(icon.Props{Class: "size-4"})
+									<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Dashboard"})) }</span>
+								}
+							}
+							@sidebar.MenuItem() {
+								@sidebar.MenuButton(sidebar.MenuButtonProps{
+									Href:     ApiBasePath + "/inbox",
+									Tooltip:  Must(t.LocalizeMessage(&i18n.Message{ID: "Inbox"})),
+									IsActive: c.Path() == ApiBasePath+"/inbox",
+								}) {
+									@icon.Inbox(icon.Props{Class: "size-4"})
+									<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Inbox"})) }</span>
+									@sidebar.MenuBadge() {
+										0
+									}
+								}
+							}
+						}
+					}
+					@sidebar.Separator()
+					@sidebar.Group() {
+						@sidebar.GroupLabel() {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "Business"})) }
+						}
+						@sidebar.Menu() {
+							@sidebar.MenuItem() {
+								@collapsible.Collapsible(collapsible.Props{
+									Open: lo.Contains(
+										[]string{"skus", "inventories", "products", "variants"},
+										MustHave(lo.Last(strings.Split(c.Path(), "/"))),
+									),
+									Class: "group/collapsible w-full",
+								}) {
+									@collapsible.Trigger() {
+										@sidebar.MenuButton(sidebar.MenuButtonProps{
+											Tooltip: Must(t.LocalizeMessage(&i18n.Message{ID: "Products"})),
+										}) {
+											@icon.Package(icon.Props{Class: "size-4"})
+											<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Products"})) }</span>
+											@icon.ChevronRight(icon.Props{
+												Class: "ml-auto size-4 transition-transform group-data-[tui-collapsible-state=open]/collapsible:rotate-90",
+											})
+										}
+									}
+									@collapsible.Content() {
+										@sidebar.MenuSub() {
+											@sidebar.MenuSubItem() {
+												@sidebar.MenuSubButton(sidebar.MenuSubButtonProps{
+													Href:     ApiBasePath + "/products",
+													IsActive: c.Path() == ApiBasePath+"/products",
+												}) {
+													<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Products"})) }</span>
+												}
+											}
+											@sidebar.MenuSubItem() {
+												@sidebar.MenuSubButton(sidebar.MenuSubButtonProps{
+													Href:     ApiBasePath + "/skus",
+													IsActive: c.Path() == ApiBasePath+"/skus",
+												}) {
+													<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "SKUs"})) }</span>
+												}
+											}
+											@sidebar.MenuSubItem() {
+												@sidebar.MenuSubButton(sidebar.MenuSubButtonProps{
+													Href:     ApiBasePath + "/inventories",
+													IsActive: c.Path() == ApiBasePath+"/inventories",
+												}) {
+													<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Inventories"})) }</span>
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					@sidebar.Separator()
+					@sidebar.Group() {
+						@sidebar.GroupLabel() {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "System"})) }
+						}
+						@sidebar.Menu() {
+							@sidebar.MenuItem() {
+								@collapsible.Collapsible(collapsible.Props{
+									Open: lo.Contains(
+										[]string{"users", "roles", "permissions"},
+										MustHave(lo.Last(strings.Split(c.Path(), "/"))),
+									),
+									Class: "group/collapsible w-full",
+								}) {
+									@collapsible.Trigger() {
+										@sidebar.MenuButton(sidebar.MenuButtonProps{
+											Tooltip: Must(t.LocalizeMessage(&i18n.Message{ID: "UsersAndRoles"})),
+										}) {
+											@icon.UserLock(icon.Props{Class: "size-4"})
+											<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "UsersAndRoles"})) }</span>
+											@icon.ChevronRight(icon.Props{
+												Class: "ml-auto size-4 transition-transform group-data-[tui-collapsible-state=open]/collapsible:rotate-90",
+											})
+										}
+									}
+									@collapsible.Content() {
+										@sidebar.MenuSub() {
+											@sidebar.MenuSubItem() {
+												@sidebar.MenuSubButton(sidebar.MenuSubButtonProps{
+													Href:     ApiBasePath + "/users",
+													IsActive: c.Path() == ApiBasePath+"/users",
+												}) {
+													@icon.Users(icon.Props{Class: "size-4"})
+													<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Users"})) }</span>
+												}
+											}
+											@sidebar.MenuSubItem() {
+												@sidebar.MenuSubButton(sidebar.MenuSubButtonProps{
+													Href:     ApiBasePath + "/roles",
+													IsActive: c.Path() == ApiBasePath+"/roles",
+												}) {
+													@icon.BrickWallShield(icon.Props{Class: "size-4"})
+													<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Roles"})) }</span>
+												}
+											}
+											@sidebar.MenuSubItem() {
+												@sidebar.MenuSubButton(sidebar.MenuSubButtonProps{
+													Href:     ApiBasePath + "/permissions",
+													IsActive: c.Path() == ApiBasePath+"/permissions",
+												}) {
+													@icon.ShieldMinus(icon.Props{Class: "size-4"})
+													<span>{ Must(t.LocalizeMessage(&i18n.Message{ID: "Permissions"})) }</span>
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				@sidebar.Footer() {
+					@sidebar.Menu() {
+						@sidebar.MenuItem() {
+							@dropdown.Dropdown() {
+								{{ user := fiber.Locals[*token.User](c, auth.UserInfoKey) }}
+								@dropdown.Trigger() {
+									@sidebar.MenuButton(sidebar.MenuButtonProps{
+										Size: sidebar.MenuButtonSizeLg,
+									}) {
+										@avatar.Avatar(avatar.Props{Class: "size-8 rounded-lg"}) {
+											@avatar.Image(avatar.ImageProps{
+												Src: "https://i.pravatar.cc/150?img=10",
+											})
+										}
+										<div class="grid flex-1 text-left text-sm leading-tight">
+											<span class="truncate font-medium">{ user.Name }</span>
+											<span class="truncate text-xs">{ user.Email }</span>
+										</div>
+										@icon.ChevronsUpDown(icon.Props{Class: "ml-auto size-4"})
+									}
+								}
+								@dropdown.Content(dropdown.ContentProps{
+									Class:     "w-56",
+									Placement: dropdown.PlacementTopStart,
+								}) {
+									@dropdown.Label() {
+										{ user.Name }
+									}
+									@dropdown.Separator()
+									@dropdown.Item(dropdown.ItemProps{
+										Attributes: templ.Attributes{
+											"hx-post":              "/auth/logout",
+											"hx-on::after-request": "window.location.href='/'",
+										},
+									}) {
+										<span class="flex items-center">
+											@icon.LogOut(icon.Props{Class: "mr-2 size-4"})
+											{ Must(t.LocalizeMessage(&i18n.Message{ID: "LogOut"})) }
+										</span>
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			@sidebar.Inset() {
+				<div class="flex h-full flex-col">
+					<div class="px-6 flex justify-between items-center relative">
+						<span class="text-lg"><span class="font-bold">{ Must(t.LocalizeMessage(&i18n.Message{ID: "AdminPanel"})) }</span></span>
+						<div class="flex gap-1 items-center justify-center">
+							@block.LangSwitcher()
+							@block.ThemeSwitcher()
+						</div>
+					</div>
+					<div class="flex h-14 items-center gap-4 px-6">
+						@sidebar.Trigger()
+						@breadcrumb.Breadcrumb() {
+							@breadcrumb.List() {
+								for i, seg := range strings.Split(c.Path(), "/") {
+									if i == 0 {
+									} else if i == len(strings.Split(c.Path(), "/"))-1 {
+										@breadcrumb.Item() {
+											@breadcrumb.Page(breadcrumb.ItemProps{Current: true}) {
+												{ lo.LastOrEmpty(strings.Split(c.Path(), "/")) }
+											}
+										}
+									} else {
+										@breadcrumb.Item() {
+											@breadcrumb.Link(breadcrumb.LinkProps{
+												Href: "javascript:void(0)",
+											}) {
+												{ seg }
+											}
+											@breadcrumb.Separator()
+										}
+									}
+								}
+							}
+						}
+					</div>
+					<div class="px-10 py-3">
+						{ children... }
+					</div>
+				</div>
+			}
+		}
+	}
+}

@@ -1,0 +1,170 @@
+# 认证
+Login: 登入
+LoginWithUnpw: 使用用户名和密码登入
+SignUp: 注册
+SignUpWithUnpw: 使用用户名和密码注册
+Username: 用户名
+Password: 密码
+ConfirmPassword: 确认密码
+InputUsernameHere: 在此输入用户名
+InputPasswordHere: 在此输入密码
+InputPasswordAgainHere: 再次输入密码
+DontHaveAccount: 还没有账号？
+AlreadyHaveAccount: 已有账号？
+
+# 登录页
+FantaAdmin: Fanta 管理后台
+AdminPanelDesc: 使用以下技术构建的电商管理面板
+GolangFiber: Golang & Fiber
+
+# 仪表板
+AdminPanel: 管理面板
+WelcomeAdminPanel: 欢迎使用管理面板。使用导航管理您的电商平台。
+
+# 收件箱
+Inbox: 收件箱
+NoNewMessages: 收件箱中没有新消息。
+
+# 导航
+Platform: 平台
+Business: 业务
+Dashboard: 仪表盘
+Products: 产品
+SKUs: SKU
+UsersAndRoles: 用户与角色
+Users: 用户
+Roles: 角色
+LogOut: 退出登录
+
+# 通用操作
+Refresh: 刷新
+Search: 搜索
+Submit: 提交
+Create: 创建
+Edit: 编辑
+Delete: 删除
+Save: 保存
+Cancel: 取消
+Actions: 操作
+
+# 产品管理
+ProductManagement: 产品管理
+SearchProducts: 搜索产品
+InputToSearch: 输入以搜索...
+Name: 名称
+Descriptions: 描述
+Brand: 品牌
+Category: 类别
+TotalSKU: SKU总数
+EditProduct: 编辑产品
+CreateNewProduct: 创建新产品
+ProductSavedSuccessfully: 产品保存成功
+ManageSKUs: 管理SKU
+SureToDelete: 确定删除吗？
+EgIphone15Pro: 例如 iPhone 15 Pro
+ShortDescriptionPlaceholder: 简短描述
+EgApple: 例如 Apple
+EgPhonePc: 例如 手机 / 电脑
+
+# SKU管理
+SKUManagement: SKU管理
+SearchSKU: 搜索SKU
+SkuContains: sku包含...
+SKU: SKU
+Product: 产品
+Spec: 规格
+Prices: 价格
+TotalInventory: 库存总数
+EditSKU: 编辑SKU
+CreateSKU: 创建SKU
+ProductID: 产品ID
+SKUCode: SKU代码
+SpecType: 规格类型
+PhonePc: 手机 / 电脑
+BasePrice: 基础价格（分）
+Currency: 货币
+USD: USD
+Phone: 手机
+PC: PC
+CPU: CPU
+RAMShort: 内存
+CurrencyMustBe3To8Letters: 货币必须是 3-8 个字母（例如 USD）。
+SpecificationDetails: 规格详情
+PhoneSpec: 手机规格
+PCSpec: 电脑规格
+Processor: 处理器
+Storage: 存储（GB）
+Color: 颜色
+Size: 尺寸
+Camera: 相机
+RAM: 内存（GB）
+EgA17Pro: 例如 A17 Pro
+Eg256: 例如 256
+EgNaturalTitanium: 例如 原色钛金属
+Eg61Inch: 例如 6.1 英寸
+Eg48MPMain: 例如 48MP 主摄
+EgIntelCoreI7: 例如 Intel Core i7
+Eg16: 例如 16
+Eg512: 例如 512
+Eg129900: 例如 129900
+Add: 添加
+AmountsAreCents: 金额为整数分（例如 129900 表示 $1299.00）。
+AmountCents: 金额（分）
+DeletePrice: 删除价格
+SKUSaved: SKU已保存
+ManageInventory: 管理库存
+Inventories: 库存
+Warehouse: 仓库
+Quantity: 数量
+
+# 库存管理
+Inventory: 库存
+SKUID: SKU ID
+EditInventory: 编辑库存
+CreateInventory: 创建库存
+InventorySaved: 库存已保存
+
+# 用户管理
+UserManagement: 用户管理
+InputUsernameEmailPhone: 输入用户名、邮箱或手机...
+Email: 邮箱
+EmailVerified: 邮箱已验证
+PhoneVerified: 手机已验证
+Role: 角色
+EditUser: 编辑用户
+CreateNewUser: 创建新用户
+AccountID: 账户ID
+UserName: 用户名
+EnterUsername: 输入用户名
+EnterPassword: 输入密码
+EnterEmail: 输入邮箱
+PhoneNumber: 手机号码
+EnterPhoneNumber: 输入手机号码
+SelectARole: 选择角色
+UserSavedSuccessfully: 用户保存成功
+NoNeedToFill: 无需填写，系统生成
+
+# RBAC - 权限
+Permissions: 权限
+Resource: 资源
+Action: 操作
+Items: 项
+
+# RBAC - 角色
+RoleManagement: 角色管理
+SearchRoles: 搜索角色
+InputRoleName: 输入角色名称...
+EditRole: 编辑角色
+CreateNewRole: 创建新角色
+RoleName: 角色名称
+EnterRoleName: 输入角色名称
+System: 系统
+Customer: 客户
+PermCreate: 创建
+PermRead: 读取
+PermUpdate: 更新
+PermDelete: 删除
+UpdateRole: 更新角色
+CreateRole: 创建角色
+RoleSavedSuccessfully: 角色保存成功
+DeleteThisRole: 删除此角色？

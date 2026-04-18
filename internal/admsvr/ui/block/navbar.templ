@@ -1,0 +1,19 @@
+
+package block
+
+templ Navbar() {
+	<nav class="py-1">
+		<div class="px-6 flex justify-between items-center relative">
+			<div hx-boost="true" class="flex items-center">
+				<!-- @NavbarMobileMenu() -->
+				<a href="/" class="flex items-center gap-1.5">
+					<span class="text-xl"><span class="font-bold">Fanta</span>Code</span>
+				</a>
+			</div>
+			<div class="flex gap-1 items-center justify-center">
+				@LangSwitcher()
+				@ThemeSwitcher()
+			</div>
+		</div>
+	</nav>
+}

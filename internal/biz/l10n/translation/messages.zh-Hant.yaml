@@ -1,0 +1,170 @@
+# 認證
+Login: 登入
+LoginWithUnpw: 使用用戶名和密碼登入
+SignUp: 註冊
+SignUpWithUnpw: 使用用戶名和密碼註冊
+Username: 用戶名
+Password: 密碼
+ConfirmPassword: 確認密碼
+InputUsernameHere: 在此輸入用戶名
+InputPasswordHere: 在此輸入密碼
+InputPasswordAgainHere: 再次輸入密碼
+DontHaveAccount: 還沒有帳號？
+AlreadyHaveAccount: 已有帳號？
+
+# 登入頁
+FantaAdmin: Fanta 管理後台
+AdminPanelDesc: 使用以下技術構建的電商管理面板
+GolangFiber: Golang & Fiber
+
+# 儀表板
+AdminPanel: 管理面板
+WelcomeAdminPanel: 歡迎使用管理面板。使用導覽管理您的電商平台。
+
+# 收件箱
+Inbox: 收件箱
+NoNewMessages: 收件箱中沒有新訊息。
+
+# 導覽
+Platform: 平台
+Business: 業務
+Dashboard: 儀表板
+Products: 產品
+SKUs: SKU
+UsersAndRoles: 用戶與角色
+Users: 用戶
+Roles: 角色
+LogOut: 登出
+
+# 通用操作
+Refresh: 刷新
+Search: 搜尋
+Submit: 提交
+Create: 建立
+Edit: 編輯
+Delete: 刪除
+Save: 儲存
+Cancel: 取消
+Actions: 操作
+
+# 產品管理
+ProductManagement: 產品管理
+SearchProducts: 搜尋產品
+InputToSearch: 輸入以搜尋...
+Name: 名稱
+Descriptions: 描述
+Brand: 品牌
+Category: 類別
+TotalSKU: SKU總數
+EditProduct: 編輯產品
+CreateNewProduct: 建立新產品
+ProductSavedSuccessfully: 產品儲存成功
+ManageSKUs: 管理SKU
+SureToDelete: 確定刪除嗎？
+EgIphone15Pro: 例如 iPhone 15 Pro
+ShortDescriptionPlaceholder: 簡短描述
+EgApple: 例如 Apple
+EgPhonePc: 例如 手機 / 電腦
+
+# SKU管理
+SKUManagement: SKU管理
+SearchSKU: 搜尋SKU
+SkuContains: sku包含...
+SKU: SKU
+Product: 產品
+Spec: 規格
+Prices: 價格
+TotalInventory: 庫存總數
+EditSKU: 編輯SKU
+CreateSKU: 建立SKU
+ProductID: 產品ID
+SKUCode: SKU代碼
+SpecType: 規格類型
+PhonePc: 手機 / 電腦
+BasePrice: 基礎價格（分）
+Currency: 貨幣
+USD: USD
+Phone: 手機
+PC: PC
+CPU: CPU
+RAMShort: 記憶體
+CurrencyMustBe3To8Letters: 貨幣必須是 3-8 個字母（例如 USD）。
+SpecificationDetails: 規格詳情
+PhoneSpec: 手機規格
+PCSpec: 電腦規格
+Processor: 處理器
+Storage: 儲存（GB）
+Color: 顏色
+Size: 尺寸
+Camera: 相機
+RAM: 記憶體（GB）
+EgA17Pro: 例如 A17 Pro
+Eg256: 例如 256
+EgNaturalTitanium: 例如 原色鈦金屬
+Eg61Inch: 例如 6.1 吋
+Eg48MPMain: 例如 48MP 主鏡頭
+EgIntelCoreI7: 例如 Intel Core i7
+Eg16: 例如 16
+Eg512: 例如 512
+Eg129900: 例如 129900
+Add: 新增
+AmountsAreCents: 金額為整數分（例如 129900 表示 $1299.00）。
+AmountCents: 金額（分）
+DeletePrice: 刪除價格
+SKUSaved: SKU已儲存
+ManageInventory: 管理庫存
+Inventories: 庫存
+Warehouse: 倉庫
+Quantity: 數量
+
+# 庫存管理
+Inventory: 庫存
+SKUID: SKU ID
+EditInventory: 編輯庫存
+CreateInventory: 建立庫存
+InventorySaved: 庫存已儲存
+
+# 用戶管理
+UserManagement: 用戶管理
+InputUsernameEmailPhone: 輸入用戶名、郵箱或手機...
+Email: 郵箱
+EmailVerified: 郵箱已驗證
+PhoneVerified: 手機已驗證
+Role: 角色
+EditUser: 編輯用戶
+CreateNewUser: 建立新用戶
+AccountID: 帳戶ID
+UserName: 用戶名
+EnterUsername: 輸入用戶名
+EnterPassword: 輸入密碼
+EnterEmail: 輸入郵箱
+PhoneNumber: 手機號碼
+EnterPhoneNumber: 輸入手機號碼
+SelectARole: 選擇角色
+UserSavedSuccessfully: 用戶儲存成功
+NoNeedToFill: 無需填寫，系統生成
+
+# RBAC - 權限
+Permissions: 權限
+Resource: 資源
+Action: 操作
+Items: 項
+
+# RBAC - 角色
+RoleManagement: 角色管理
+SearchRoles: 搜尋角色
+InputRoleName: 輸入角色名稱...
+EditRole: 編輯角色
+CreateNewRole: 建立新角色
+RoleName: 角色名稱
+EnterRoleName: 輸入角色名稱
+System: 系統
+Customer: 客戶
+PermCreate: 建立
+PermRead: 讀取
+PermUpdate: 更新
+PermDelete: 刪除
+UpdateRole: 更新角色
+CreateRole: 建立角色
+RoleSavedSuccessfully: 角色儲存成功
+DeleteThisRole: 刪除此角色？

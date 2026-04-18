@@ -1,0 +1,168 @@
+package product
+
+import (
+	"fantacode/ecomm/internal/admsvr/router/api/apicm"
+	"fantacode/ecomm/internal/admsvr/ui/block"
+	"fantacode/ecomm/internal/admsvr/ui/components/button"
+	"fantacode/ecomm/internal/admsvr/ui/components/card"
+	"fantacode/ecomm/internal/admsvr/ui/components/form"
+	"fantacode/ecomm/internal/admsvr/ui/components/icon"
+	"fantacode/ecomm/internal/admsvr/ui/components/input"
+	"fantacode/ecomm/internal/admsvr/ui/components/table"
+	"fantacode/ecomm/internal/biz/dao/model"
+	"fantacode/ecomm/internal/biz/l10n"
+	"fantacode/ecomm/internal/gorm/gormq"
+	"fmt"
+	. "github.com/colafanta/go-opera"
+	"github.com/gofiber/fiber/v3"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/samber/lo"
+	"net/url"
+	"strings"
+)
+
+templ InventoryTableLayout(c fiber.Ctx) {
+	{{ t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer) }}
+	@apicm.AdminLayout(c) {
+		<h1 class="text-2xl font-semibold py-3">{ Must(t.LocalizeMessage(&i18n.Message{ID: "Inventory"})) }</h1>
+		<div class="w-full my-0.5 flex items-center justify-between gap-3">
+			<form id="filters" hx-boost="true" hx-target="#data-table" action="" class="max-w-sm">
+				<input type="hidden" name="sku_id" value={ c.Query("sku_id") }/>
+				<input id="page_no" type="hidden" name="_page" value={ MaybeEmpty(c.Query("_page")).Or("1") }/>
+				@button.Button(button.Props{Variant: button.VariantSecondary, Type: button.TypeSubmit}) {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Refresh"})) }
+				}
+			</form>
+			<div class="flex items-center gap-2">
+				@button.Button(button.Props{Size: button.SizeIcon, Variant: button.VariantSecondary, Href: apicm.ApiBasePath + "/inventories/create?sku_id=" + url.QueryEscape(c.Query("sku_id"))}) {
+					@icon.Plus()
+				}
+			</div>
+		</div>
+		<div id="data-table" class="mt-6">
+			{ children... }
+		</div>
+	}
+}
+
+templ InventoryTable(c fiber.Ctx) {
+	{{
+		res := fiber.Locals[gormq.GetListResponse[model.Inventory]](c, keyInventoryTableData)
+		data := res.Data
+		t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer)
+	}}
+	@table.Table() {
+		@table.Header() {
+			@table.Row() {
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "SKUID"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Warehouse"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Quantity"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Actions"})) }
+				}
+			}
+		}
+		@table.Body() {
+			for _, d := range data {
+				@table.Row() {
+					@table.Cell() {
+						{ fmt.Sprintf("%d", d.SkuID) }
+					}
+					@table.Cell() {
+						{ d.Warehouse }
+					}
+					@table.Cell() {
+						{ fmt.Sprintf("%d", d.Quantity) }
+					}
+					@table.Cell() {
+						@button.Button(button.Props{Variant: button.VariantOutline, Size: button.SizeIcon, Href: apicm.ApiBasePath + "/inventories/" + fmt.Sprintf("%d", d.ID)}) {
+							@icon.PenLine()
+						}
+						@button.Button(button.Props{Variant: button.VariantDestructive, Size: button.SizeIcon, Attributes: templ.Attributes{
+							"hx-delete":  apicm.ApiBasePath + "/inventories/" + url.PathEscape(fmt.Sprintf("%d", d.ID)),
+							"hx-confirm": Must(t.LocalizeMessage(&i18n.Message{ID: "SureToDelete"})),
+							"hx-target":  "closest tr",
+							"hx-swap":    "delete",
+						}}) {
+							@icon.Trash()
+						}
+					}
+				}
+			}
+		}
+	}
+	{{ curr, total := res.Page, res.Total/res.Size+lo.Ternary(res.Total%res.Size > 0, 1, 0) }}
+	@block.Pagination(block.PaginationProps{CurrentPage: curr, TotalPages: total})
+}
+
+templ InventoryCuForm(c fiber.Ctx) {
+	{{
+		inv := fiber.Locals[model.Inventory](c, inventoryDetailDataKey)
+		isEditing := inv.ID != 0
+		skuID := MaybeEmpty(c.Query("sku_id")).Or(lo.Ternary(inv.SkuID != 0, fmt.Sprintf("%d", inv.SkuID), ""))
+		t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer)
+		invSavedMsg := strings.ReplaceAll(Must(t.LocalizeMessage(&i18n.Message{ID: "InventorySaved"})), "'", "\\'")
+		invCuFormHs := fmt.Sprintf(`on htmx:afterRequest
+																if event.detail.successful then
+																	alert('%s')
+																	set window.location.href to '.'
+																end`, invSavedMsg)
+	}}
+	@apicm.AdminLayout(c) {
+		<h1 class="text-2xl font-semibold py-3">{ Must(t.LocalizeMessage(&i18n.Message{ID: "Inventory"})) }</h1>
+		<div class="mt-2 flex px-4 pb-10">
+			@card.Card(card.Props{Class: "w-full max-w-2xl"}) {
+				@card.Header() {
+					@card.Title() {
+						if isEditing {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "EditInventory"})) }
+						} else {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "CreateInventory"})) }
+						}
+					}
+				}
+				@card.Content() {
+					<form
+						hx-put={ apicm.ApiBasePath + "/inventories" }
+						hx-swap="none"
+						_={ invCuFormHs }
+					>
+						<input type="hidden" name="id" value={ lo.Ternary(isEditing, fmt.Sprintf("%d", inv.ID), "") }/>
+						@form.Item() {
+							@form.Label(form.LabelProps{For: "sku_id"}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "SKUID"})) }
+							}
+							@input.Input(input.Props{ID: "sku_id", Name: "sku_id", Value: skuID, Attributes: templ.Attributes{"required": true, "type": "number"}})
+						}
+						<div class="my-4"></div>
+						@form.Item() {
+							@form.Label(form.LabelProps{For: "warehouse"}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Warehouse"})) }
+							}
+							@input.Input(input.Props{ID: "warehouse", Name: "warehouse", Value: inv.Warehouse, Attributes: templ.Attributes{"required": true}})
+						}
+						<div class="my-4"></div>
+						@form.Item() {
+							@form.Label(form.LabelProps{For: "quantity"}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Quantity"})) }
+							}
+							@input.Input(input.Props{ID: "quantity", Name: "quantity", Value: lo.Ternary(isEditing, fmt.Sprintf("%d", inv.Quantity), ""), Attributes: templ.Attributes{"required": true, "type": "number"}})
+						}
+						<div class="my-6"></div>
+						<div class="flex justify-center">
+							@button.Button(button.Props{Type: button.TypeSubmit}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Submit"})) }
+							}
+						</div>
+					</form>
+				}
+			}
+		</div>
+	}
+}

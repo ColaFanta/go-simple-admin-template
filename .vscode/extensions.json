@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "golang.go",
+    "bradlc.vscode-tailwindcss",
+    "a-h.templ",
+    "redhat.vscode-yaml"
+  ]
+}

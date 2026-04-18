@@ -1,0 +1,14 @@
+package layout
+
+import "fantacode/ecomm/internal/admsvr/ui/block"
+
+templ LandingLayout() {
+	@BaseLayout() {
+		<div class="h-full flex flex-col">
+			@block.Navbar()
+			<main class="flex-1">
+				{ children... }
+			</main>
+		</div>
+	}
+}

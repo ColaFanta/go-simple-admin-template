@@ -1,0 +1,64 @@
+services:
+  app:
+    build: .
+    ports:
+      - 3000:3000
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_URL: ":3000"
+      DATABASE_DSN: "host=postgres user=postgres password=mysupersecret dbname=postgres port=5432 sslmode=disable"
+      DATABASE_SCHEMA: "biz"
+      AUTH_SECRET: "your-dev-secret-key-change-me-in-prod"
+      AUTH_ISSUER: "adminsvr"
+      AUTH_URL: "http://localhost:3000"
+      
+      # Optional: Redis (uncomment if needed and add redis service)
+      # REDIS_URL: "redis://redis:6379"
+
+  db-init:
+    build:
+      context: .
+      target: builder
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - postgres_data:/db-data
+    environment:
+      DATABASE_DSN: "host=postgres user=postgres password=mysupersecret dbname=postgres port=5432 sslmode=disable"
+    command: >
+      /bin/sh -c "
+      if [ ! -f /db-data/.migrated ]; then
+        go run ./scripts/goose/up && touch /db-data/.migrated;
+      else
+        echo 'Skipping migration (already done)';
+      fi &&
+      if [ ! -f /db-data/.seeded ]; then
+        go run ./scripts/seed && touch /db-data/.seeded;
+      else
+        echo 'Skipping seed (already done)';
+      fi
+      "
+
+  postgres:
+    image: postgres:18
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: mysupersecret
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

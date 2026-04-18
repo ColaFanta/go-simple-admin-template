@@ -1,0 +1,38 @@
+{
+  "[go]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.formatOnSave": true
+  },
+  "[tailwindcss]": {
+    "editor.defaultFormatter": "bradlc.vscode-tailwindcss",
+    "editor.formatOnSave": true
+  },
+  "[templ]": {
+    "editor.defaultFormatter": "a-h.templ",
+    "editor.formatOnSave": true
+  },
+  "go.alternateTools": {
+    "customFormatter": "golangci-lint-v2"
+  },
+  "go.formatFlags": [
+    "fmt",
+    "--stdin"
+  ],
+  "go.formatTool": "custom",
+  "go.lintFlags": [
+    "--path-mode=abs",
+    "--fast-only"
+  ],
+  "go.lintTool": "golangci-lint-v2",
+  "tailwindCSS.includeLanguages": {
+    "templ": "html"
+  },
+  "yaml.schemas": {
+    "https://golangci-lint.run/jsonschema/golangci.jsonschema.json": [
+      ".golangci.yml"
+    ]
+  }
+}

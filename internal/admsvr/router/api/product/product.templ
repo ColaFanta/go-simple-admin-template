@@ -1,0 +1,231 @@
+package product
+
+import (
+	"fantacode/ecomm/internal/admsvr/router/api/apicm"
+	"fantacode/ecomm/internal/admsvr/ui/block"
+	"fantacode/ecomm/internal/admsvr/ui/components/badge"
+	"fantacode/ecomm/internal/admsvr/ui/components/button"
+	"fantacode/ecomm/internal/admsvr/ui/components/card"
+	"fantacode/ecomm/internal/admsvr/ui/components/form"
+	"fantacode/ecomm/internal/admsvr/ui/components/icon"
+	"fantacode/ecomm/internal/admsvr/ui/components/input"
+	"fantacode/ecomm/internal/admsvr/ui/components/table"
+	"fantacode/ecomm/internal/biz/dao/model"
+	"fantacode/ecomm/internal/biz/l10n"
+	"fantacode/ecomm/internal/gorm/gormq"
+	"fmt"
+	. "github.com/colafanta/go-opera"
+	"github.com/gofiber/fiber/v3"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/samber/lo"
+	"net/url"
+)
+
+templ productTableLayout(c fiber.Ctx) {
+	{{ t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer) }}
+	@apicm.AdminLayout(c) {
+		<h1 class="text-2xl font-semibold py-3">{ Must(t.LocalizeMessage(&i18n.Message{ID: "ProductManagement"})) }</h1>
+		<div class="w-full my-0.5 flex items-center justify-between gap-3">
+			<form id="filters" hx-boost="true" hx-target="#data-table" action="" class="max-w-sm">
+				@form.Item() {
+					@form.Label(form.LabelProps{
+						For: "search",
+					}) {
+						{ Must(t.LocalizeMessage(&i18n.Message{ID: "SearchProducts"})) }
+					}
+					@form.ItemFlex(form.ItemProps{Class: "w-full"}) {
+						<div class="flex-1">
+							@input.Input(input.Props{
+								ID:          "search",
+								Type:        input.TypeSearch,
+								Name:        "search",
+								Value:       c.Query("search"),
+								Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "InputToSearch"})),
+							})
+						</div>
+						@button.Button(button.Props{
+							Size:    button.SizeIcon,
+							Variant: button.VariantSecondary,
+							Type:    button.TypeSubmit,
+						}) {
+							@icon.Search()
+						}
+					}
+				}
+				<input id="page_no" type="hidden" name="_page" value={ MaybeEmpty(c.Query("_page")).Or("1") }/>
+			</form>
+			<div class="flex items-center gap-2">
+				@button.Button(button.Props{
+					Size:    button.SizeIcon,
+					Variant: button.VariantSecondary,
+					Href:    c.Path() + "/create",
+				}) {
+					@icon.Plus()
+				}
+			</div>
+		</div>
+		<div id="data-table" class="mt-6">
+			{ children... }
+		</div>
+	}
+}
+
+templ productTable(c fiber.Ctx) {
+	{{
+		t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer)
+		res := fiber.Locals[gormq.GetListResponse[model.Product]](c, keyProductTableData)
+		data := res.Data
+	}}
+	@table.Table() {
+		@table.Header() {
+			@table.Row() {
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Name"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Descriptions"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Brand"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Category"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "TotalSKU"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Actions"})) }
+				}
+			}
+		}
+		@table.Body() {
+			for _, d := range data {
+				@table.Row() {
+					@table.Cell() {
+						{ d.Name }
+					}
+					@table.Cell() {
+						{ d.Description }
+					}
+					@table.Cell() {
+						{ d.Brand }
+					}
+					@table.Cell() {
+						@badge.Badge(badge.Props{
+							Variant: badge.VariantSecondary,
+						}) {
+							{ d.Category }
+						}
+					}
+					@table.Cell() {
+						<a class="underline" href={ apicm.ApiBasePath + fmt.Sprintf("/skus?product_id=%d", d.ID) }>
+							{ fmt.Sprintf("%d", len(d.Skus)) }
+						</a>
+					}
+					@table.Cell() {
+						@button.Button(button.Props{
+							Variant: button.VariantOutline,
+							Size:    button.SizeIcon,
+							Href:    c.Path() + "/" + fmt.Sprintf("%d", d.ID),
+						}) {
+							@icon.PenLine()
+						}
+						@button.Button(button.Props{
+							Variant: button.VariantDestructive,
+							Size:    button.SizeIcon,
+							Attributes: templ.Attributes{
+								"hx-delete":  c.Path() + "/" + url.PathEscape(fmt.Sprintf("%d", d.ID)),
+								"hx-confirm": Must(t.LocalizeMessage(&i18n.Message{ID: "SureToDelete"})),
+								"hx-target":  "closest tr",
+								"hx-swap":    "delete",
+							},
+						}) {
+							@icon.Trash()
+						}
+					}
+				}
+			}
+		}
+	}
+	{{ curr, total := res.Page, res.Total/res.Size+lo.Ternary(res.Total%res.Size > 0, 1, 0) }}
+	@block.Pagination(block.PaginationProps{
+		CurrentPage: curr,
+		TotalPages:  total,
+	})
+}
+
+templ ProductCuForm(c fiber.Ctx) {
+	{{
+		t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer)
+		p := fiber.Locals[model.Product](c, productDetailDataKey)
+		isEditing := p.ID != 0
+	}}
+	@apicm.AdminLayout(c) {
+		<h1 class="text-2xl font-semibold py-3">{ Must(t.LocalizeMessage(&i18n.Message{ID: "ProductManagement"})) }</h1>
+		<div class="mt-2 flex px-4 pb-10">
+			@card.Card(card.Props{Class: "w-full max-w-2xl"}) {
+				@card.Header() {
+					@card.Title() {
+						if isEditing {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "EditProduct"})) }
+						} else {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "CreateNewProduct"})) }
+						}
+					}
+				}
+				@card.Content() {
+					<form
+						hx-put={ apicm.ApiBasePath + "/products" }
+						hx-swap="none"
+						_={ fmt.Sprintf(`on htmx:afterRequest
+														if event.detail.successful then
+															alert('%s')
+															set window.location.href to '.'
+														end`, Must(t.LocalizeMessage(&i18n.Message{ID: "ProductSavedSuccessfully"}))) }
+					>
+						<input type="hidden" name="id" value={ lo.Ternary(isEditing, fmt.Sprintf("%d", p.ID), "") }/>
+						@form.Item() {
+							@form.Label(form.LabelProps{For: "name"}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Name"})) }
+							}
+							@input.Input(input.Props{ID: "name", Name: "name", Value: p.Name, Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "EgIphone15Pro"})), Attributes: templ.Attributes{"required": true}})
+						}
+						<div class="my-4"></div>
+						@form.Item() {
+							@form.Label(form.LabelProps{For: "description"}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Descriptions"})) }
+							}
+							@input.Input(input.Props{ID: "description", Name: "description", Value: p.Description, Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "ShortDescriptionPlaceholder"})), Attributes: templ.Attributes{"required": true}})
+						}
+						<div class="my-4"></div>
+						@form.Item() {
+							@form.Label(form.LabelProps{For: "brand"}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Brand"})) }
+							}
+							@input.Input(input.Props{ID: "brand", Name: "brand", Value: p.Brand, Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "EgApple"})), Attributes: templ.Attributes{"required": true}})
+						}
+						<div class="my-4"></div>
+						@form.Item() {
+							@form.Label(form.LabelProps{For: "category"}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Category"})) }
+							}
+							@input.Input(input.Props{ID: "category", Name: "category", Value: p.Category, Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "EgPhonePc"})), Attributes: templ.Attributes{"required": true}})
+						}
+						<div class="my-6"></div>
+						<div class="flex justify-between gap-3">
+							@button.Button(button.Props{Type: button.TypeSubmit}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "Submit"})) }
+							}
+							if isEditing {
+								@button.Button(button.Props{Variant: button.VariantSecondary, Href: apicm.ApiBasePath + fmt.Sprintf("/skus?product_id=%d", p.ID)}) {
+									{ Must(t.LocalizeMessage(&i18n.Message{ID: "ManageSKUs"})) }
+								}
+							}
+						</div>
+					</form>
+				}
+			}
+		</div>
+	}
+}

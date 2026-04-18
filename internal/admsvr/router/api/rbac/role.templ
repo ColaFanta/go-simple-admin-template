@@ -1,0 +1,454 @@
+package rbac
+
+import (
+	"fantacode/ecomm/internal/admsvr/router/api/apicm"
+	"fantacode/ecomm/internal/admsvr/ui/components/button"
+	"fantacode/ecomm/internal/admsvr/ui/components/card"
+	"fantacode/ecomm/internal/admsvr/ui/components/checkbox"
+	"fantacode/ecomm/internal/admsvr/ui/components/form"
+	"fantacode/ecomm/internal/admsvr/ui/components/icon"
+	"fantacode/ecomm/internal/admsvr/ui/components/input"
+	"fantacode/ecomm/internal/admsvr/ui/components/table"
+	"fantacode/ecomm/internal/biz/l10n"
+	"fantacode/ecomm/internal/biz/rbac"
+	"fmt"
+	. "github.com/colafanta/go-opera"
+	"github.com/gofiber/fiber/v3"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/samber/lo"
+	"net/url"
+	"regexp"
+	"sort"
+	"strings"
+)
+
+templ RoleTableLayout(c fiber.Ctx) {
+	{{ t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer) }}
+	@apicm.AdminLayout(c) {
+		<h1 class="text-2xl font-semibold py-3">{ Must(t.LocalizeMessage(&i18n.Message{ID: "RoleManagement"})) }</h1>
+		<div class="w-full my-0.5 flex items-center justify-between gap-3">
+			<form hx-boost="true" hx-target="#data-table" action={ apicm.ApiBasePath + "/roles" } class="max-w-sm">
+				@form.Item() {
+					@form.Label(form.LabelProps{
+						For: "search-roles",
+					}) {
+						{ Must(t.LocalizeMessage(&i18n.Message{ID: "SearchRoles"})) }
+					}
+					@form.ItemFlex(form.ItemProps{Class: "w-full"}) {
+						<div class="flex-1">
+							@input.Input(input.Props{
+								ID:          "search-roles",
+								Type:        input.TypeSearch,
+								Name:        "q",
+								Value:       c.Query("q"),
+								Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "InputRoleName"})),
+							})
+						</div>
+						@button.Button(button.Props{
+							Size:    button.SizeIcon,
+							Variant: button.VariantSecondary,
+							Type:    button.TypeSubmit,
+						}) {
+							@icon.Search()
+						}
+					}
+				}
+			</form>
+			<div class="flex items-center gap-2">
+				@button.Button(button.Props{
+					Size:    button.SizeIcon,
+					Variant: button.VariantSecondary,
+					Href:    apicm.ApiBasePath + "/roles/create",
+				}) {
+					@icon.Plus()
+				}
+			</div>
+		</div>
+		<div class="my-1"></div>
+		{ children... }
+	}
+}
+
+templ RoleTable(c fiber.Ctx) {
+	{{ t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer) }}
+	@table.Table(table.Props{
+		ID: "data-table",
+	}) {
+		@table.Header() {
+			@table.Row() {
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Name"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Permissions"})) }
+				}
+				@table.Head() {
+					{ Must(t.LocalizeMessage(&i18n.Message{ID: "Actions"})) }
+				}
+			}
+		}
+		@table.Body() {
+			for _, role := range fiber.Locals[[]rbac.Role](c,roleTableDataKey) {
+				{{
+					perms := role.Permissions
+					isSuperAdmin := lo.ContainsBy(perms, func(p rbac.Permission) bool {
+						return p.Name == "perm::super_admin"
+					})
+				}}
+				@table.Row() {
+					@table.Cell() {
+						{ role.Name }
+					}
+					@table.Cell() {
+						{{
+							nameRe := regexp.MustCompile(`^perm::(create|read|update|delete)_(.+)$`)
+							permSet := map[string]map[string]bool{}
+							resourceSet := map[string]struct{}{}
+
+							for _, p := range perms {
+								m := nameRe.FindStringSubmatch(p.Name)
+								if len(m) != 3 {
+									continue
+								}
+								action, resource := m[1], m[2]
+								if resource == "" || action == "" {
+									continue
+								}
+								if permSet[resource] == nil {
+									permSet[resource] = map[string]bool{}
+								}
+								permSet[resource][action] = true
+								resourceSet[resource] = struct{}{}
+							}
+
+							hasPerm := func(resource, action string) bool {
+								if permSet[resource] == nil {
+									return false
+								}
+								return permSet[resource][action]
+							}
+
+							resourceLabel := func(resource string) string {
+								resource = strings.TrimSpace(resource)
+								if resource == "" {
+									return "(unknown)"
+								}
+								parts := lo.Filter(strings.Split(resource, "_"), func(s string, _ int) bool { return s != "" })
+								parts = lo.Map(parts, func(s string, _ int) string {
+									if len(s) == 0 {
+										return s
+									}
+									return strings.ToUpper(s[:1]) + s[1:]
+								})
+								return strings.Join(parts, " ")
+							}
+
+							orderedResources := lo.Keys(resourceSet)
+							sort.Strings(orderedResources)
+						}}
+						<div class="space-y-2">
+							if isSuperAdmin {
+								<span class="text-sm font-mono">*</span>
+							} else {
+								for _, res := range orderedResources {
+									{{ hasAny := hasPerm(res, "create") || hasPerm(res, "read") || hasPerm(res, "update") || hasPerm(res, "delete") }}
+									if hasAny {
+										<div>
+											<div class="text-xs font-medium text-muted-foreground">{ resourceLabel(res) }</div>
+											<div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+												<div class="flex items-center gap-1">
+													@checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "create")})
+													<span class="text-xs">{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermCreate"})) }</span>
+												</div>
+												<div class="flex items-center gap-1">
+													@checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "read")})
+													<span class="text-xs">{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermRead"})) }</span>
+												</div>
+												<div class="flex items-center gap-1">
+													@checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "update")})
+													<span class="text-xs">{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermUpdate"})) }</span>
+												</div>
+												<div class="flex items-center gap-1">
+													@checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "delete")})
+													<span class="text-xs">{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermDelete"})) }</span>
+												</div>
+											</div>
+										</div>
+									}
+								}
+							}
+						</div>
+					}
+					@table.Cell() {
+						{{
+							if isSuperAdmin {
+								return
+							}
+						}}
+						@button.Button(button.Props{
+							Variant: button.VariantOutline,
+							Size:    button.SizeIcon,
+							Href:    apicm.ApiBasePath + "/roles/" + url.PathEscape(role.Name),
+						}) {
+							@icon.PencilLine()
+						}
+						@button.Button(button.Props{
+							Variant: button.VariantDestructive,
+							Size:    button.SizeIcon,
+							Attributes: templ.Attributes{
+								"hx-delete":  apicm.ApiBasePath + "/roles/" + url.PathEscape(role.Name),
+								"hx-confirm": Must(t.LocalizeMessage(&i18n.Message{ID: "DeleteThisRole"})),
+								"hx-target":  "closest tr",
+								"hx-swap":    "delete",
+							},
+						}) {
+							@icon.Trash()
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+templ RoleCuForm(c fiber.Ctx) {
+	{{
+		t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer)
+		role := fiber.Locals[rbac.Role](c, roleDetailDataKey)
+		perms := lo.Map(role.Permissions, func(item rbac.Permission, _ int) string {
+			return item.Name
+		})
+		isEditing := role.Name != ""
+	}}
+	@apicm.AdminLayout(c) {
+		<h1 class="text-2xl font-semibold py-3">{ Must(t.LocalizeMessage(&i18n.Message{ID: "RoleManagement"})) }</h1>
+		<div class="mt-2 flex px-4 pb-10">
+			@card.Card(card.Props{Class: "w-full max-w-2xl"}) {
+				@card.Header() {
+					@card.Title() {
+						if isEditing {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "EditRole"})) }
+						} else {
+							{ Must(t.LocalizeMessage(&i18n.Message{ID: "CreateNewRole"})) }
+						}
+					}
+				}
+				@card.Content() {
+					<form
+						hx-put={ apicm.ApiBasePath + "/roles" }
+						hx-swap="none"
+						_={ fmt.Sprintf(`on htmx:afterRequest
+								if event.detail.successful then
+									alert('%s')
+									set window.location.href to '.'
+								end`, Must(t.LocalizeMessage(&i18n.Message{ID: "RoleSavedSuccessfully"}))) }
+					>
+						@form.Item() {
+							@form.Label(form.LabelProps{
+								For: "role-name",
+							}) {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "RoleName"})) }
+							}
+							<div class="flex w-full">
+								<span class="inline-flex items-center rounded-l-md border border-input bg-muted px-3 text-sm text-muted-foreground select-none">role::</span>
+								<div class="flex-1">
+									@input.Input(input.Props{
+										ID:          "role-name",
+										Name:        "name",
+										Class:       "rounded-l-none border-l-0",
+										Placeholder: Must(t.LocalizeMessage(&i18n.Message{ID: "EnterRoleName"})),
+										Value:       strings.ReplaceAll(role.Name, "role::", ""),
+										Readonly:    isEditing,
+										Attributes: templ.Attributes{
+											"required": true,
+											"pattern":  "[a-zA-Z0-9_\\-]+",
+										},
+									})
+								</div>
+							</div>
+						}
+						<div class="my-4"></div>
+						@form.Item() {
+							<p class="text-sm leading-none font-medium">{ Must(t.LocalizeMessage(&i18n.Message{ID: "Permissions"})) }</p>
+							<p class="text-sm leading-none">{ Must(t.LocalizeMessage(&i18n.Message{ID: "System"})) }</p>
+							<div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::create_system",
+											Name:    "permissions",
+											Value:   "perm::create_system",
+											Checked: lo.Contains(perms, "perm::create_system"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::create_system"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermCreate"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::read_system",
+											Name:    "permissions",
+											Value:   "perm::read_system",
+											Checked: lo.Contains(perms, "perm::read_system"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::read_system"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermRead"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::update_system",
+											Name:    "permissions",
+											Value:   "perm::update_system",
+											Checked: lo.Contains(perms, "perm::update_system"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::update_system"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermUpdate"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::delete_system",
+											Name:    "permissions",
+											Value:   "perm::delete_system",
+											Checked: lo.Contains(perms, "perm::delete_system"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::delete_system"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermDelete"})) }
+									}
+								</div>
+							</div>
+							<p class="text-sm leading-none">{ Must(t.LocalizeMessage(&i18n.Message{ID: "Customer"})) }</p>
+							<div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::create_customer",
+											Name:    "permissions",
+											Value:   "perm::create_customer",
+											Checked: lo.Contains(perms, "perm::create_customer"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::create_customer"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermCreate"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::read_customer",
+											Name:    "permissions",
+											Value:   "perm::read_customer",
+											Checked: lo.Contains(perms, "perm::read_customer"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::read_customer"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermRead"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::update_customer",
+											Name:    "permissions",
+											Value:   "perm::update_customer",
+											Checked: lo.Contains(perms, "perm::update_customer"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::update_customer"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermUpdate"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::delete_customer",
+											Name:    "permissions",
+											Value:   "perm::delete_customer",
+											Checked: lo.Contains(perms, "perm::delete_customer"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::delete_customer"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermDelete"})) }
+									}
+								</div>
+							</div>
+							<p class="text-sm leading-none">{ Must(t.LocalizeMessage(&i18n.Message{ID: "Product"})) }</p>
+							<div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::create_product",
+											Name:    "permissions",
+											Value:   "perm::create_product",
+											Checked: lo.Contains(perms, "perm::create_product"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::create_product"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermCreate"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::read_product",
+											Name:    "permissions",
+											Value:   "perm::read_product",
+											Checked: lo.Contains(perms, "perm::read_product"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::read_product"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermRead"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::update_product",
+											Name:    "permissions",
+											Value:   "perm::update_product",
+											Checked: lo.Contains(perms, "perm::update_product"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::update_product"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermUpdate"})) }
+									}
+								</div>
+								<div class="flex items-center gap-2">
+									@checkbox.Checkbox(
+										checkbox.Props{
+											ID:      "perm::delete_product",
+											Name:    "permissions",
+											Value:   "perm::delete_product",
+											Checked: lo.Contains(perms, "perm::delete_product"),
+										},
+									)
+									@form.Label(form.LabelProps{For: "perm::delete_product"}) {
+										{ Must(t.LocalizeMessage(&i18n.Message{ID: "PermDelete"})) }
+									}
+								</div>
+							</div>
+						}
+						<div class="my-4"></div>
+						@button.Button(button.Props{
+							Type: button.TypeSubmit,
+						}) {
+							if isEditing {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "UpdateRole"})) }
+							} else {
+								{ Must(t.LocalizeMessage(&i18n.Message{ID: "CreateRole"})) }
+							}
+						}
+					</form>
+				}
+			}
+		</div>
+	}
+}

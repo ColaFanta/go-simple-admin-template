@@ -1,0 +1,12 @@
+package misc
+
+import (
+	"fantacode/ecomm/internal/admsvr/ui/layout"
+	"github.com/gofiber/fiber/v3"
+)
+
+templ NotFound(c fiber.Ctx) {
+	@layout.LandingLayout() {
+		<div>404</div>
+	}
+}

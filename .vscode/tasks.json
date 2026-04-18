@@ -1,0 +1,48 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "adm hwr",
+      "type": "shell",
+      "command": "go tool templ generate --watch --proxy='http://127.0.0.1:3000' --cmd='go run ./cmd/admin' --open-browser=true"
+    },
+    {
+      "label": "adm tw",
+      "type": "shell",
+      "command": "tailwindcss '-i' internal/admsvr/ui/assets/css/input.css '-o' internal/admsvr/ui/assets/css/output.css --watch 'internal/admsvr/**/*.{templ}'"
+    },
+    {
+      "label": "dev",
+      "dependsOn": [
+        "adm tw",
+        "adm hwr"
+      ],
+      "dependsOrder": "parallel",
+    },
+    {
+      "label": "Goose Up",
+      "type": "shell",
+      "command": "go run ./scripts/goose/up",
+    },
+    {
+      "label": "Goose Down",
+      "type": "shell",
+      "command": "go run ./scripts/goose/down",
+    },
+    {
+      "label": "Goose Status",
+      "type": "shell",
+      "command": "go run ./scripts/goose/status",
+    },
+    {
+      "label": "GORM Seed",
+      "type": "shell",
+      "command": "go run ./scripts/seed",
+    },
+    {
+      "label": "templ gen",
+      "type": "shell",
+      "command": "go tool templ generate"
+    },
+  ]
+}
