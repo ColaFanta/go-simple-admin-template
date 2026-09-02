@@ -115,4 +115,4 @@ Các task hữu ích:
 - server UI quản trị
 - server API có tài liệu
 
-Route nằm trong `internal/admsvr/router`, và Swagger được phục vụ tại `/openapi/*`.
+Route nằm trong `internal/app/server/router`, và Swagger được phục vụ tại `/openapi/*`.

@@ -1,0 +1,116 @@
+package block
+
+import (
+	"fantacode/ecomm/internal/app/server/ui/components/pagination"
+	"fmt"
+	opera "github.com/colafanta/go-opera"
+)
+
+type PaginationProps struct {
+	CurrentPage int
+	TotalPages  int
+	// default: "filters"
+	FilterId string
+	// default: "page_no"
+	PagingId string
+}
+
+templ Pagination(props ...PaginationProps) {
+	{{
+		var prop PaginationProps
+		if len(props) > 0 {
+			prop = props[0]
+		}
+		prop.FilterId = opera.MaybeEmpty(prop.FilterId).Or("filters")
+		prop.PagingId = opera.MaybeEmpty(prop.PagingId).Or("page_no")
+		p := pagination.CreatePagination(prop.CurrentPage, prop.TotalPages, 3)
+	}}
+	@pagination.Pagination(pagination.Props{
+		Class: "mt-8",
+		Attributes: templ.Attributes{
+			"_": fmt.Sprintf("init set (value of #%s) to %d", prop.PagingId, prop.CurrentPage),
+		},
+	}) {
+		@pagination.Content() {
+			@pagination.Item() {
+				@pagination.Previous(pagination.PreviousProps{
+					Disabled: !p.HasPrevious,
+					Attributes: templ.Attributes{
+						"_": fmt.Sprintf(`on click 
+							get (value of #%s) as an Int
+							if it is greater than 1 then decrement it 
+							set (value of #%s) to it
+							trigger submit on #%s`, prop.PagingId, prop.PagingId, prop.FilterId),
+					},
+				})
+			}
+			if p.Pages[0] > 1 {
+				@pagination.Item() {
+					@pagination.Link(pagination.LinkProps{
+						Attributes: templ.Attributes{
+							"_": fmt.Sprintf(`on click
+							set (value of #%s) to 1
+							trigger submit on #%s
+							`, prop.PagingId, prop.FilterId),
+						},
+					}) {
+						1
+					}
+				}
+				if p.Pages[0] > 2 {
+					@pagination.Item() {
+						@pagination.Ellipsis()
+					}
+				}
+			}
+			// Visible pages
+			for _, page := range p.Pages {
+				@pagination.Item() {
+					@pagination.Link(pagination.LinkProps{
+						IsActive: page == p.CurrentPage,
+						Attributes: templ.Attributes{
+							"_": fmt.Sprintf(`on click
+							set (value of #%s) to %d
+							trigger submit on #%s
+							`, prop.PagingId, page, prop.FilterId),
+						},
+					}) {
+						{ page }
+					}
+				}
+			}
+			// Last page with ellipsis if needed
+			if p.Pages[len(p.Pages)-1] < p.TotalPages {
+				if p.Pages[len(p.Pages)-1] < p.TotalPages-1 {
+					@pagination.Item() {
+						@pagination.Ellipsis()
+					}
+				}
+				@pagination.Item() {
+					@pagination.Link(pagination.LinkProps{
+						Attributes: templ.Attributes{
+							"_": fmt.Sprintf(`on click
+							set (value of #%s) to %d
+							trigger submit on #%s
+							`, prop.PagingId, p.TotalPages, prop.FilterId),
+						},
+					}) {
+						{ p.TotalPages }
+					}
+				}
+			}
+			@pagination.Item() {
+				@pagination.Next(pagination.NextProps{
+					Disabled: !p.HasNext,
+					Attributes: templ.Attributes{
+						"_": fmt.Sprintf(`on click 
+							get (value of #%s) as an Int
+						  if it is less than %d then increment it 
+							set (value of #%s) to it
+							trigger submit on #%s`, prop.PagingId, p.TotalPages, prop.PagingId, prop.FilterId),
+					},
+				})
+			}
+		}
+	}
+}

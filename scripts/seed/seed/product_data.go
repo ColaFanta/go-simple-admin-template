@@ -1,6 +1,6 @@
 package seed
 
-import "fantacode/ecomm/internal/biz/dao/model"
+import "fantacode/ecomm/internal/app/module/dao/model"
 
 // AppleProducts returns a declarative list of products to seed.
 // Prices are in cents.

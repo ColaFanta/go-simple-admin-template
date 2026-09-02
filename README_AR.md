@@ -115,4 +115,4 @@ docker compose up --build
 - خادم UI للإدارة
 - خادم API موثق
 
-المسارات موجودة تحت `internal/admsvr/router` ويتم تقديم Swagger من `/openapi/*`.
+المسارات موجودة تحت `internal/app/server/router` ويتم تقديم Swagger من `/openapi/*`.

@@ -115,4 +115,4 @@ Este proyecto es ambas cosas:
 - servidor de UI admin
 - servidor API documentado
 
-Las rutas viven en `internal/admsvr/router` y Swagger se sirve desde `/openapi/*`.
+Las rutas viven en `internal/app/server/router` y Swagger se sirve desde `/openapi/*`.

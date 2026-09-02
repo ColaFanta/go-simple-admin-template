@@ -115,4 +115,4 @@ Docker Compose は Postgres を起動し、migration と seed を実行してか
 - 管理 UI サーバー
 - ドキュメント化された API サーバー
 
-ルートは `internal/admsvr/router` 配下にあり、Swagger は `/openapi/*` で提供されます。
+ルートは `internal/app/server/router` 配下にあり、Swagger は `/openapi/*` で提供されます。

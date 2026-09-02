@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "github.com/colafanta/go-opera"
+	opera "github.com/colafanta/go-opera"
 	"github.com/pressly/goose/v3"
 
 	_ "fantacode/ecomm/scripts/goose"
@@ -9,5 +9,5 @@ import (
 )
 
 func main() {
-	MustPass(goose.Down(SqlDb, ScriptsDir, goose.WithAllowMissing()))
+	opera.MustPass(goose.Down(SqlDb, ScriptsDir, goose.WithAllowMissing()))
 }

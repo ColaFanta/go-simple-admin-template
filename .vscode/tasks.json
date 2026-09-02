@@ -9,7 +9,7 @@
     {
       "label": "adm tw",
       "type": "shell",
-      "command": "tailwindcss '-i' internal/admsvr/ui/assets/css/input.css '-o' internal/admsvr/ui/assets/css/output.css --watch 'internal/admsvr/**/*.{templ}'"
+      "command": "tailwindcss '-i' internal/app/server/ui/assets/css/input.css '-o' internal/app/server/ui/assets/css/output.css --watch 'internal/app/server/**/*.{templ}'"
     },
     {
       "label": "dev",

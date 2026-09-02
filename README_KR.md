@@ -115,4 +115,4 @@ Docker Compose가 Postgres를 시작하고, 마이그레이션과 시드를 실�
 - 관리자 UI 서버
 - 문서화된 API 서버
 
-라우트는 `internal/admsvr/router` 아래에 있고 Swagger는 `/openapi/*`에서 제공됩니다.
+라우트는 `internal/app/server/router` 아래에 있고 Swagger는 `/openapi/*`에서 제공됩니다.

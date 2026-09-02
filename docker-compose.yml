@@ -31,6 +31,9 @@ services:
       - postgres_data:/db-data
     environment:
       DATABASE_DSN: "host=postgres user=postgres password=mysupersecret dbname=postgres port=5432 sslmode=disable"
+      AUTH_SECRET: "your-dev-secret-key-change-me-in-prod"
+      AUTH_ISSUER: "adminsvr"
+      AUTH_URL: "http://localhost:3000"
     command: >
       /bin/sh -c "
       if [ ! -f /db-data/.migrated ]; then

@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"fantacode/ecomm/internal/biz/dao/model"
-	"fantacode/ecomm/internal/envvar"
+	"fantacode/ecomm/internal/app/module/dao/model"
+	"fantacode/ecomm/internal/platform/config"
 	. "fantacode/ecomm/scripts/migrationdb"
 
-	. "github.com/colafanta/go-opera"
+	opera "github.com/colafanta/go-opera"
 	"github.com/pressly/goose/v3"
 	"github.com/samber/do/v2"
 	"github.com/samber/lo"
@@ -42,8 +42,8 @@ var initTables = []any{
 func upInit(ctx context.Context, _ *sql.Tx) error {
 	return DB.Transaction(
 		func(tx *gorm.DB) error {
-			return Do(func() Unit {
-				MustPass(
+			return opera.Do(func() opera.Unit {
+				opera.MustPass(
 					tx.Migrator().CreateTable(initTables...))
 				un := "superadmin01"
 				pw := "password01"
@@ -52,19 +52,19 @@ func upInit(ctx context.Context, _ *sql.Tx) error {
 					Email:             lo.ToPtr(un + "@example.com"),
 					EmailVerified:     lo.ToPtr(true),
 					Password: lo.ToPtr(
-						string(Must(bcrypt.GenerateFromPassword([]byte(pw), 16))),
+						string(opera.Must(bcrypt.GenerateFromPassword([]byte(pw), 16))),
 					),
 				}
-				MustPass(
+				opera.MustPass(
 					gorm.G[model.Account](tx).Create(ctx, &acc))
 				admin := model.Admin{
 					AccountSub: acc.Sub,
 					Role:       "role::root",
 				}
-				MustPass(
+				opera.MustPass(
 					gorm.G[model.Admin](tx).Create(ctx, &admin))
 
-				return U
+				return opera.U
 			}).Err()
 		})
 }
@@ -72,11 +72,11 @@ func upInit(ctx context.Context, _ *sql.Tx) error {
 func downInit(_ context.Context, _ *sql.Tx) error {
 	return DB.Transaction(
 		func(tx *gorm.DB) error {
-			return Do(func() Unit {
-				MustPass(tx.Migrator().DropTable(initTables...))
+			return opera.Do(func() opera.Unit {
+				opera.MustPass(tx.Migrator().DropTable(initTables...))
 				dbschema := do.MustInvoke[envvar.EnvVar](Container).DatabaseSchema
-				MustPass(tx.Migrator().DropTable(fmt.Sprintf(`"%s"."rbac_rules"`, dbschema)))
-				return U
+				opera.MustPass(tx.Migrator().DropTable(fmt.Sprintf(`"%s"."rbac_rules"`, dbschema)))
+				return opera.U
 			}).Err()
 		})
 }

@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fantacode/ecomm/internal/admsvr/router"
-	"fantacode/ecomm/internal/admsvr/ui/utils"
-	"fantacode/ecomm/internal/biz/auth"
-	"fantacode/ecomm/internal/biz/l10n"
-	"fantacode/ecomm/internal/biz/rbac"
-	"fantacode/ecomm/internal/envvar"
-	"fantacode/ecomm/internal/gorm/gorm_db"
+	"fantacode/ecomm/internal/app/server/router"
+	"fantacode/ecomm/internal/app/server/ui/utils"
+	"fantacode/ecomm/internal/app/module/auth"
+	"fantacode/ecomm/internal/app/module/l10n"
+	"fantacode/ecomm/internal/app/module/rbac"
+	"fantacode/ecomm/internal/platform/config"
+	"fantacode/ecomm/internal/platform/database/gorm_db"
 
 	"github.com/joho/godotenv"
 	"github.com/samber/do/v2"

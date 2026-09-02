@@ -115,4 +115,4 @@ Docker Compose 会启动 Postgres、执行 migration、执行 seed，然后启�
 - 后台 UI 服务
 - 带文档的 API 服务
 
-路由位于 `internal/admsvr/router`，Swagger 位于 `/openapi/*`。
+路由位于 `internal/app/server/router`，Swagger 位于 `/openapi/*`。

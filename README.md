@@ -115,4 +115,4 @@ This is both:
 - an admin UI server
 - a documented API server
 
-Routes live under `internal/admsvr/router`, and Swagger is served from `/openapi/*`.
+Routes live under `internal/app/server/router`, and Swagger is served from `/openapi/*`.
