@@ -12,13 +12,13 @@ import (
 	"fantacode/ecomm/internal/app/module/rbac"
 	l10n "fantacode/ecomm/internal/app/server/middleware"
 	"fantacode/ecomm/internal/app/server/router/api/apicm"
-	"fantacode/ecomm/internal/app/server/ui/components/button"
-	"fantacode/ecomm/internal/app/server/ui/components/card"
-	"fantacode/ecomm/internal/app/server/ui/components/checkbox"
-	"fantacode/ecomm/internal/app/server/ui/components/form"
-	"fantacode/ecomm/internal/app/server/ui/components/icon"
-	"fantacode/ecomm/internal/app/server/ui/components/input"
-	"fantacode/ecomm/internal/app/server/ui/components/table"
+	"fantacode/ecomm/internal/app/ui/components/button"
+	"fantacode/ecomm/internal/app/ui/components/card"
+	"fantacode/ecomm/internal/app/ui/components/checkbox"
+	"fantacode/ecomm/internal/app/ui/components/form"
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/components/input"
+	"fantacode/ecomm/internal/app/ui/components/table"
 	"fmt"
 	opera "github.com/colafanta/go-opera"
 	"github.com/gofiber/fiber/v3"
@@ -157,7 +157,7 @@ func RoleTableLayout(c fiber.Ctx) templ.Component {
 					}
 					templ_7745c5c3_Err = input.Input(input.Props{
 						ID:          "search-roles",
-						Type:        input.TypeSearch,
+						Type:        "search",
 						Name:        "q",
 						Value:       c.Query("q"),
 						Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "InputRoleName"})),
@@ -564,7 +564,7 @@ func RoleTable(c fiber.Ctx) templ.Component {
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
-										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "create")}).Render(ctx, templ_7745c5c3_Buffer)
+										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, DefaultChecked: hasPerm(res, "create")}).Render(ctx, templ_7745c5c3_Buffer)
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
@@ -585,7 +585,7 @@ func RoleTable(c fiber.Ctx) templ.Component {
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
-										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "read")}).Render(ctx, templ_7745c5c3_Buffer)
+										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, DefaultChecked: hasPerm(res, "read")}).Render(ctx, templ_7745c5c3_Buffer)
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
@@ -606,7 +606,7 @@ func RoleTable(c fiber.Ctx) templ.Component {
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
-										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "update")}).Render(ctx, templ_7745c5c3_Buffer)
+										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, DefaultChecked: hasPerm(res, "update")}).Render(ctx, templ_7745c5c3_Buffer)
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
@@ -627,7 +627,7 @@ func RoleTable(c fiber.Ctx) templ.Component {
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
-										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, Checked: hasPerm(res, "delete")}).Render(ctx, templ_7745c5c3_Buffer)
+										templ_7745c5c3_Err = checkbox.Checkbox(checkbox.Props{Disabled: true, DefaultChecked: hasPerm(res, "delete")}).Render(ctx, templ_7745c5c3_Buffer)
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
 										}
@@ -998,7 +998,7 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 							Class:       "rounded-l-none border-l-0",
 							Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "EnterRoleName"})),
 							Value:       strings.ReplaceAll(role.Name, "role::", ""),
-							Readonly:    isEditing,
+							ReadOnly:    isEditing,
 							Attributes: templ.Attributes{
 								"required": true,
 								"pattern":  "[a-zA-Z0-9_\\-]+",
@@ -1065,10 +1065,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::create_system",
-								Name:    "permissions",
-								Value:   "perm::create_system",
-								Checked: lo.Contains(perms, "perm::create_system"),
+								ID:             "perm::create_system",
+								Name:           "permissions",
+								Value:          "perm::create_system",
+								DefaultChecked: lo.Contains(perms, "perm::create_system"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1107,10 +1107,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::read_system",
-								Name:    "permissions",
-								Value:   "perm::read_system",
-								Checked: lo.Contains(perms, "perm::read_system"),
+								ID:             "perm::read_system",
+								Name:           "permissions",
+								Value:          "perm::read_system",
+								DefaultChecked: lo.Contains(perms, "perm::read_system"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1149,10 +1149,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::update_system",
-								Name:    "permissions",
-								Value:   "perm::update_system",
-								Checked: lo.Contains(perms, "perm::update_system"),
+								ID:             "perm::update_system",
+								Name:           "permissions",
+								Value:          "perm::update_system",
+								DefaultChecked: lo.Contains(perms, "perm::update_system"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1191,10 +1191,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::delete_system",
-								Name:    "permissions",
-								Value:   "perm::delete_system",
-								Checked: lo.Contains(perms, "perm::delete_system"),
+								ID:             "perm::delete_system",
+								Name:           "permissions",
+								Value:          "perm::delete_system",
+								DefaultChecked: lo.Contains(perms, "perm::delete_system"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1246,10 +1246,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::create_customer",
-								Name:    "permissions",
-								Value:   "perm::create_customer",
-								Checked: lo.Contains(perms, "perm::create_customer"),
+								ID:             "perm::create_customer",
+								Name:           "permissions",
+								Value:          "perm::create_customer",
+								DefaultChecked: lo.Contains(perms, "perm::create_customer"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1288,10 +1288,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::read_customer",
-								Name:    "permissions",
-								Value:   "perm::read_customer",
-								Checked: lo.Contains(perms, "perm::read_customer"),
+								ID:             "perm::read_customer",
+								Name:           "permissions",
+								Value:          "perm::read_customer",
+								DefaultChecked: lo.Contains(perms, "perm::read_customer"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1330,10 +1330,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::update_customer",
-								Name:    "permissions",
-								Value:   "perm::update_customer",
-								Checked: lo.Contains(perms, "perm::update_customer"),
+								ID:             "perm::update_customer",
+								Name:           "permissions",
+								Value:          "perm::update_customer",
+								DefaultChecked: lo.Contains(perms, "perm::update_customer"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1372,10 +1372,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::delete_customer",
-								Name:    "permissions",
-								Value:   "perm::delete_customer",
-								Checked: lo.Contains(perms, "perm::delete_customer"),
+								ID:             "perm::delete_customer",
+								Name:           "permissions",
+								Value:          "perm::delete_customer",
+								DefaultChecked: lo.Contains(perms, "perm::delete_customer"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1427,10 +1427,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::create_product",
-								Name:    "permissions",
-								Value:   "perm::create_product",
-								Checked: lo.Contains(perms, "perm::create_product"),
+								ID:             "perm::create_product",
+								Name:           "permissions",
+								Value:          "perm::create_product",
+								DefaultChecked: lo.Contains(perms, "perm::create_product"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1469,10 +1469,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::read_product",
-								Name:    "permissions",
-								Value:   "perm::read_product",
-								Checked: lo.Contains(perms, "perm::read_product"),
+								ID:             "perm::read_product",
+								Name:           "permissions",
+								Value:          "perm::read_product",
+								DefaultChecked: lo.Contains(perms, "perm::read_product"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1511,10 +1511,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::update_product",
-								Name:    "permissions",
-								Value:   "perm::update_product",
-								Checked: lo.Contains(perms, "perm::update_product"),
+								ID:             "perm::update_product",
+								Name:           "permissions",
+								Value:          "perm::update_product",
+								DefaultChecked: lo.Contains(perms, "perm::update_product"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
@@ -1553,10 +1553,10 @@ func RoleCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = checkbox.Checkbox(
 							checkbox.Props{
-								ID:      "perm::delete_product",
-								Name:    "permissions",
-								Value:   "perm::delete_product",
-								Checked: lo.Contains(perms, "perm::delete_product"),
+								ID:             "perm::delete_product",
+								Name:           "permissions",
+								Value:          "perm::delete_product",
+								DefaultChecked: lo.Contains(perms, "perm::delete_product"),
 							},
 						).Render(ctx, templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {

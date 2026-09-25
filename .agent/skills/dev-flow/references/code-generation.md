@@ -12,16 +12,17 @@ go tool templ generate
 
 The checked-in `*_templ.go` files are generated output. The VS Code `templ gen` task runs the same generator.
 
-## Templui
+## shadcn-templ
 
-The configuration is [`.templui.json`](../../../../internal/app/server/ui/.templui.json), so run the CLI from `internal/app/server/ui`:
+The configuration is [`components.json`](../../../../components.json) at the repository root. The CLI is pinned as a project-local Go tool in `go.mod`:
 
 ```sh
-go tool templui --force --installed add
+go tool shadcn-templ add <component>
+go tool shadcn-templ bundle
 go tool templ generate
 ```
 
-The installed CLI and Go module must refer to the same templui version. Review the diff because local components may not exist in the upstream registry.
+Use `go tool shadcn-templ` rather than a globally installed binary. Review generated changes because local component modifications may be overwritten by `--overwrite`.
 
 ## GORM DAO
 

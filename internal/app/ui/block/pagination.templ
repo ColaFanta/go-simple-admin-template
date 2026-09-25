@@ -1,0 +1,76 @@
+package block
+
+import (
+	"fantacode/ecomm/internal/app/ui/components/pagination"
+	"fmt"
+	opera "github.com/colafanta/go-opera"
+)
+
+type PaginationProps struct {
+	CurrentPage int
+	TotalPages  int
+	// default: "filters"
+	FilterId string
+	// default: "page_no"
+	PagingId string
+}
+
+templ Pagination(props ...PaginationProps) {
+	{{
+		var prop PaginationProps
+		if len(props) > 0 {
+			prop = props[0]
+		}
+		prop.FilterId = opera.MaybeEmpty(prop.FilterId).Or("filters")
+		prop.PagingId = opera.MaybeEmpty(prop.PagingId).Or("page_no")
+	}}
+	@pagination.Pagination(pagination.Props{
+		Class: "mt-8",
+		Attributes: templ.Attributes{
+			"_": fmt.Sprintf("init set (value of #%s) to %d", prop.PagingId, prop.CurrentPage),
+		},
+	}) {
+		@pagination.Content() {
+			@pagination.Item() {
+				@pagination.Previous(pagination.PreviousProps{
+					Disabled: prop.CurrentPage <= 1,
+					Attributes: templ.Attributes{
+						"_": fmt.Sprintf(`on click 
+							get (value of #%s) as an Int
+							if it is greater than 1 then decrement it 
+							set (value of #%s) to it
+							trigger submit on #%s`, prop.PagingId, prop.PagingId, prop.FilterId),
+					},
+				})
+			}
+			for page := 1; page <= prop.TotalPages; page++ {
+				@pagination.Item() {
+					@pagination.Link(pagination.LinkProps{
+						IsActive: page == prop.CurrentPage,
+						Attributes: templ.Attributes{
+							"_": fmt.Sprintf(`on click
+							set (value of #%s) to %d
+							trigger submit on #%s
+							`, prop.PagingId, page, prop.FilterId),
+						},
+					}) {
+						{ page }
+					}
+				}
+			}
+			// Last page with ellipsis if needed
+			@pagination.Item() {
+				@pagination.Next(pagination.NextProps{
+					Disabled: prop.CurrentPage >= prop.TotalPages,
+					Attributes: templ.Attributes{
+						"_": fmt.Sprintf(`on click 
+							get (value of #%s) as an Int
+						  if it is less than %d then increment it 
+							set (value of #%s) to it
+							trigger submit on #%s`, prop.PagingId, prop.TotalPages, prop.PagingId, prop.FilterId),
+					},
+				})
+			}
+		}
+	}
+}

@@ -1,0 +1,243 @@
+package accordion
+
+import (
+	"context"
+	"strings"
+
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/utils"
+)
+
+type Props struct {
+	ID           string
+	Class        string
+	Attributes   templ.Attributes
+	Value        []string
+	DefaultValue []string
+	Multiple     bool
+	Disabled     bool
+}
+
+type ItemProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+	Value      string
+	Disabled   bool
+}
+
+type TriggerProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+type ContentProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+type ctxKey string
+
+const (
+	rootKey ctxKey = "accordionRoot"
+	itemKey ctxKey = "accordionItem"
+)
+
+type rootState struct {
+	values     map[string]bool
+	controlled bool
+	disabled   bool
+}
+
+type itemState struct {
+	open     bool
+	disabled bool
+	id       string
+}
+
+func root(ctx context.Context) rootState {
+	state, _ := ctx.Value(rootKey).(rootState)
+	return state
+}
+
+func item(ctx context.Context) itemState {
+	state, _ := ctx.Value(itemKey).(itemState)
+	return state
+}
+
+func itemOpen(ctx context.Context) bool {
+	return item(ctx).open
+}
+
+func itemDisabled(ctx context.Context) bool {
+	return item(ctx).disabled
+}
+
+func itemID(ctx context.Context) string {
+	return item(ctx).id
+}
+
+// triggerID and panelID derive the aria-controls / aria-labelledby pair from
+// the item's id. Pass ItemProps.ID to keep them stable across renders, as an
+// htmx swap of one half needs.
+func triggerID(itemID string) string {
+	return itemID + "-trigger"
+}
+
+func panelID(itemID string) string {
+	return itemID + "-panel"
+}
+
+templ Accordion(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	{{ values := p.DefaultValue }}
+	if p.Value != nil {
+		{{ values = p.Value }}
+	}
+	{{ expanded := make(map[string]bool, len(values)) }}
+	for _, value := range values {
+		{{ expanded[value] = true }}
+	}
+	{{ ctx = context.WithValue(ctx, rootKey, rootState{values: expanded, controlled: p.Value != nil, disabled: p.Disabled}) }}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		data-slot="accordion"
+		data-tui-accordion
+		data-multiple?={ p.Multiple }
+		data-disabled?={ p.Disabled }
+		data-tui-accordion-controlled?={ p.Value != nil }
+		data-tui-accordion-value={ strings.Join(values, " ") }
+		class={
+			utils.CN(
+				"flex w-full flex-col",
+				p.Class,
+			),
+		}
+		{ p.Attributes... }
+	>
+		{ children... }
+	</div>
+}
+
+templ Item(props ...ItemProps) {
+	{{ var p ItemProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.Value == "" {
+		{{ p.Value = utils.RandomID() }}
+	}
+	{{ id := p.ID }}
+	if id == "" {
+		{{ id = utils.RandomID() }}
+	}
+	{{ r := root(ctx) }}
+	{{ open := r.values[p.Value] }}
+	{{ disabled := p.Disabled || r.disabled }}
+	{{ ctx = context.WithValue(ctx, itemKey, itemState{open: open, disabled: disabled, id: id}) }}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		data-slot="accordion-item"
+		data-tui-accordion-value={ p.Value }
+		data-open?={ open }
+		data-closed?={ !open }
+		data-disabled?={ disabled }
+		class={
+			utils.CN(
+				"not-last:border-b",
+				p.Class,
+			),
+		}
+		{ p.Attributes... }
+	>
+		{ children... }
+	</div>
+}
+
+// Trigger is Base UI's Accordion.Trigger: aria-expanded for the state and
+// aria-controls for the panel it discloses.
+templ Trigger(props ...TriggerProps) {
+	{{ var p TriggerProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.ID == "" {
+		{{ p.ID = triggerID(itemID(ctx)) }}
+	}
+	<h3 class="flex">
+		<button
+			id={ p.ID }
+			type="button"
+			if _, ok := p.Attributes["tabindex"]; !ok {
+				tabindex="0"
+			}
+			data-slot="accordion-trigger"
+			aria-expanded={ utils.IfElse(itemOpen(ctx), "true", "false") }
+			if itemOpen(ctx) {
+				aria-controls={ panelID(itemID(ctx)) }
+			}
+			disabled?={ itemDisabled(ctx) }
+			if itemDisabled(ctx) {
+				aria-disabled="true"
+			}
+			class={
+				utils.CN(
+					"focus-visible:ring-ring/50 focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground rounded-md py-4 text-left text-sm font-medium hover:underline focus-visible:ring-3 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4 group/accordion-trigger relative flex flex-1 items-start justify-between border border-transparent transition-all outline-none aria-disabled:pointer-events-none aria-disabled:opacity-50",
+					p.Class,
+				),
+			}
+			{ p.Attributes... }
+		>
+			{ children... }
+			@icon.ChevronDown(icon.Props{
+				Class:      "pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden",
+				Attributes: templ.Attributes{"data-slot": "accordion-trigger-icon"},
+			})
+			@icon.ChevronUp(icon.Props{
+				Class:      "pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline",
+				Attributes: templ.Attributes{"data-slot": "accordion-trigger-icon"},
+			})
+		</button>
+	</h3>
+}
+
+// Content is Base UI's Accordion.Panel: the region role labelled by its
+// trigger, so what the button revealed can be reached directly.
+templ Content(props ...ContentProps) {
+	{{ var p ContentProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.ID == "" {
+		{{ p.ID = panelID(itemID(ctx)) }}
+	}
+	<div
+		id={ p.ID }
+		role="region"
+		aria-labelledby={ triggerID(itemID(ctx)) }
+		data-slot="accordion-content"
+		hidden?={ !itemOpen(ctx) }
+		class="data-open:animate-accordion-down data-closed:animate-accordion-up text-sm overflow-hidden"
+		{ p.Attributes... }
+	>
+		<div
+			class={
+				utils.CN(
+					"pt-0 pb-4 h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
+					p.Class,
+				),
+			}
+		>
+			{ children... }
+		</div>
+	</div>
+}

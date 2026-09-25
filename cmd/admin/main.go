@@ -2,7 +2,7 @@ package main
 
 import (
 	"fantacode/ecomm/internal/app/server/router"
-	"fantacode/ecomm/internal/app/server/ui/utils"
+	"fantacode/ecomm/internal/app/ui/utils"
 	"fantacode/ecomm/internal/app/module/auth"
 	"fantacode/ecomm/internal/app/module/l10n"
 	"fantacode/ecomm/internal/app/module/rbac"

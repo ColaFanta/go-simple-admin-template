@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"fantacode/ecomm/internal/app/server/ui/layout"
+	"fantacode/ecomm/internal/app/ui/layout"
 	"github.com/gofiber/fiber/v3"
 )
 

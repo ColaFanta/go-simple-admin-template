@@ -1,0 +1,111 @@
+package togglegroup
+
+import (
+	"strconv"
+	"strings"
+
+	"fantacode/ecomm/internal/app/ui/components/toggle"
+	"fantacode/ecomm/internal/app/ui/utils"
+)
+
+type Orientation string
+
+const (
+	OrientationHorizontal Orientation = "horizontal"
+	OrientationVertical   Orientation = "vertical"
+)
+
+// Re-export toggle's variant/size so consumers only import togglegroup.
+type Variant = toggle.Variant
+type Size = toggle.Size
+
+const (
+	VariantDefault = toggle.VariantDefault
+	VariantOutline = toggle.VariantOutline
+	SizeDefault    = toggle.SizeDefault
+	SizeSm         = toggle.SizeSm
+	SizeLg         = toggle.SizeLg
+)
+
+type Props struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+	// Multiple allows multiple pressed items, matching Base UI.
+	Multiple bool
+	// Value is the controlled group value. A non-nil empty slice controls the
+	// group with no pressed items; use DefaultValue for browser-owned state.
+	Value        []string
+	DefaultValue []string
+	Variant      Variant
+	Size         Size
+	Orientation  Orientation
+	// Spacing is the gap between items in Tailwind spacing units. Defaults
+	// to 2; 0 joins the items into one bar (utils.Ptr(0)).
+	Spacing *int
+}
+
+templ ToggleGroup(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.Orientation == "" {
+		{{ p.Orientation = OrientationHorizontal }}
+	}
+	{{ spacing := 2 }}
+	if p.Spacing != nil {
+		{{ spacing = *p.Spacing }}
+	}
+	{{ values := p.DefaultValue }}
+	if p.Value != nil {
+		{{ values = p.Value }}
+	}
+	{{ ctx = toggle.WithGroupDefaults(ctx, p.Variant, p.Size, spacing, values, true, p.Value != nil) }}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		role="group"
+		data-slot="toggle-group"
+		data-tui-toggle-group
+		data-multiple?={ p.Multiple }
+		data-tui-toggle-group-controlled?={ p.Value != nil }
+		data-tui-toggle-group-value={ strings.Join(values, " ") }
+		if p.Variant != "" {
+			data-variant={ string(p.Variant) }
+		}
+		if p.Size != "" {
+			data-size={ string(p.Size) }
+		}
+		data-spacing={ strconv.Itoa(spacing) }
+		data-orientation={ string(p.Orientation) }
+		data-horizontal?={ p.Orientation == OrientationHorizontal }
+		data-vertical?={ p.Orientation == OrientationVertical }
+		style={ "--gap: " + strconv.Itoa(spacing) }
+		class={
+			utils.CN(
+				"rounded-md data-[spacing=0]:data-[variant=outline]:shadow-xs group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-vertical:flex-col data-vertical:items-stretch",
+				p.Class,
+			),
+		}
+		{ p.Attributes... }
+	>
+		{ children... }
+	</div>
+}
+
+// ItemProps mirror toggle.Props, ToggleGroupItem's pendant.
+type ItemProps = toggle.Props
+
+// Item is the ToggleGroupItem pendant: a toggle that picks up the group's
+// variant, size and spacing from context.
+templ Item(props ...ItemProps) {
+	{{ var p ItemProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	@toggle.Toggle(p) {
+		{ children... }
+	}
+}

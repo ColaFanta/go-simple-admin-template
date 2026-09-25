@@ -15,7 +15,7 @@ This repository is a pure Go admin and API starter. Treat it like a normal Fiber
 - `internal/app/server/router` holds the HTTP entrypoints.
 - `internal/app/server/router/api` holds authenticated admin modules under `/api`.
 - `internal/app/server/router/auth` holds login and signup flows.
-- `internal/app/server/ui` holds reusable UI building blocks.
+- `internal/app/ui` holds reusable UI building blocks.
 - `internal/app/module` holds business concerns such as auth, RBAC, i18n, DAO, and models.
 - `internal/app/server/middleware` and `internal/app/server/service` hold application-specific Fiber adapters and lifecycle services.
 - `internal/platform` holds neutral infrastructure adapters; `internal/platform/http/fiber` holds neutral Fiber and HTMX helpers.

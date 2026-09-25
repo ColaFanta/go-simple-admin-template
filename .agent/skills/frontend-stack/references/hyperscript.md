@@ -1,6 +1,6 @@
 # Hyperscript
 
-The shared script is loaded in `internal/app/server/ui/layout/base.templ` from hyperscript `0.9.93`.
+The shared script is loaded in `internal/app/ui/layout/base.templ` from hyperscript `0.9.93`.
 
 ## Local Rules
 

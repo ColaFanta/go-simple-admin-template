@@ -1,6 +1,6 @@
 ---
 name: dev-flow
-description: "Use this project's development workflow for templ, templui, GORM DAO generation, routes, translations, and Goose migrations."
+description: "Use this project's development workflow for templ, shadcn-templ, GORM DAO generation, routes, translations, and Goose migrations."
 user-invocable: false
 disable-model-invocation: false
 ---

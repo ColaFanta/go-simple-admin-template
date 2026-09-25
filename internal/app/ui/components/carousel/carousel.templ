@@ -1,0 +1,215 @@
+package carousel
+
+import (
+	"context"
+	"strconv"
+
+	"fantacode/ecomm/internal/app/ui/components/button"
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/utils"
+)
+
+type Orientation string
+
+const (
+	OrientationHorizontal Orientation = "horizontal"
+	OrientationVertical   Orientation = "vertical"
+)
+
+type ctxKey string
+
+const orientationKey ctxKey = "carouselOrientation"
+
+func orientation(ctx context.Context) Orientation {
+	if o, ok := ctx.Value(orientationKey).(Orientation); ok && o != "" {
+		return o
+	}
+	return OrientationHorizontal
+}
+
+type Align string
+
+const (
+	AlignStart  Align = "start"
+	AlignCenter Align = "center"
+	AlignEnd    Align = "end"
+)
+
+type Props struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+	// Orientation of the scroll axis. Defaults to horizontal.
+	Orientation Orientation
+	// Align of the snapped slide within the viewport (embla's align
+	// option). Defaults to center, like embla.
+	Align Align
+	// Loop wraps from the last slide back to the first.
+	Loop bool
+	// Autoplay advances the slides automatically (the embla autoplay
+	// plugin pendant); pauses while hovered.
+	Autoplay bool
+	// Interval between autoplay steps in ms. Defaults to 5000.
+	Interval int
+}
+
+type ContentProps struct {
+	Class      string
+	Attributes templ.Attributes
+}
+
+type ItemProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+type PreviousProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+type NextProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ Carousel(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.Orientation == "" {
+		{{ p.Orientation = OrientationHorizontal }}
+	}
+	if p.Interval == 0 {
+		{{ p.Interval = 5000 }}
+	}
+	{{ ctx = context.WithValue(ctx, orientationKey, p.Orientation) }}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		role="region"
+		aria-roledescription="carousel"
+		data-slot="carousel"
+		data-tui-carousel
+		data-tui-carousel-orientation={ string(p.Orientation) }
+		if p.Align != "" {
+			data-tui-carousel-align={ string(p.Align) }
+		}
+		data-tui-carousel-loop={ strconv.FormatBool(p.Loop) }
+		data-tui-carousel-autoplay={ strconv.FormatBool(p.Autoplay) }
+		data-tui-carousel-interval={ strconv.Itoa(p.Interval) }
+		class={ utils.CN("relative", p.Class) }
+		{ p.Attributes... }
+	>
+		{ children... }
+	</div>
+}
+
+templ Content(props ...ContentProps) {
+	{{ var p ContentProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	<div data-slot="carousel-content" data-tui-carousel-viewport class="overflow-hidden">
+		<div
+			data-tui-carousel-track
+			class={
+				utils.CN(
+					"flex",
+					utils.IfElse(orientation(ctx) == OrientationHorizontal, "-ml-4", "-mt-4 flex-col"),
+					p.Class,
+				),
+			}
+			{ p.Attributes... }
+		>
+			{ children... }
+		</div>
+	</div>
+}
+
+templ Item(props ...ItemProps) {
+	{{ var p ItemProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		role="group"
+		aria-roledescription="slide"
+		data-slot="carousel-item"
+		data-tui-carousel-item
+		class={
+			utils.CN(
+				"min-w-0 shrink-0 grow-0 basis-full",
+				utils.IfElse(orientation(ctx) == OrientationHorizontal, "pl-4", "pt-4"),
+				p.Class,
+			),
+		}
+		{ p.Attributes... }
+	>
+		{ children... }
+	</div>
+}
+
+templ Previous(props ...PreviousProps) {
+	{{ var p PreviousProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	@button.Button(button.Props{
+		ID:      p.ID,
+		Variant: button.VariantOutline,
+		Size:    button.SizeIconSm,
+		Class: utils.CN(
+			"rounded-full absolute touch-manipulation",
+			utils.IfElse(
+				orientation(ctx) == OrientationHorizontal,
+				"inset-y-0 -left-12 my-auto",
+				"-top-12 left-1/2 -translate-x-1/2 rotate-90",
+			),
+			p.Class,
+		),
+		Attributes: utils.MergeAttributes(templ.Attributes{
+			"data-slot":             "carousel-previous",
+			"data-tui-carousel-prev": true,
+		}, p.Attributes),
+	}) {
+		@icon.ChevronLeft(icon.Props{Class: ""})
+		<span class="sr-only">Previous slide</span>
+	}
+}
+
+templ Next(props ...NextProps) {
+	{{ var p NextProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	@button.Button(button.Props{
+		ID:      p.ID,
+		Variant: button.VariantOutline,
+		Size:    button.SizeIconSm,
+		Class: utils.CN(
+			"rounded-full absolute touch-manipulation",
+			utils.IfElse(
+				orientation(ctx) == OrientationHorizontal,
+				"inset-y-0 -right-12 my-auto",
+				"-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
+			),
+			p.Class,
+		),
+		Attributes: utils.MergeAttributes(templ.Attributes{
+			"data-slot":             "carousel-next",
+			"data-tui-carousel-next": true,
+		}, p.Attributes),
+	}) {
+		@icon.ChevronRight(icon.Props{Class: ""})
+		<span class="sr-only">Next slide</span>
+	}
+}

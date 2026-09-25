@@ -1,0 +1,21 @@
+{
+  "$schema": "https://shadcn-templ.com/schema/components.json",
+  "aliases": {
+    "components": "fantacode/ecomm/internal/app/ui/components",
+    "utils": "fantacode/ecomm/internal/app/ui/utils"
+  },
+  "iconLibrary": "lucide",
+  "menuAccent": "subtle",
+  "menuColor": "default",
+  "rtl": false,
+  "scripts": {
+    "dir": "internal/app/ui/assets/js",
+    "path": "/assets/js"
+  },
+  "style": "base-vega",
+  "tailwind": {
+    "baseColor": "neutral",
+    "css": "internal/app/ui/assets/css/input.css",
+    "cssVariables": true
+  }
+}

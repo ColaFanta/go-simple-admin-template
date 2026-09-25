@@ -1,19 +1,19 @@
 ---
 name: frontend-stack
-description: "Use this project's HTMX 4, hyperscript, templui v1, embedded asset, and server-rendered frontend conventions."
+description: "Use this project's HTMX 4, hyperscript, shadcn-templ v2, embedded asset, and server-rendered frontend conventions."
 user-invocable: false
 disable-model-invocation: false
 ---
 
 # Frontend Stack
 
-Use this skill for browser behavior, templui components, and HTMX or hyperscript changes. Read the closest reference before editing.
+Use this skill for browser behavior, shadcn-templ components, and HTMX or hyperscript changes. Read the closest reference before editing.
 
 ## References
 
 - [HTMX 4](./references/htmx4.md)
 - [Hyperscript](./references/hyperscript.md)
-- [Templui](./references/templui.md)
+- [shadcn-templ](./references/shadcn-templ.md)
 
 ## Local Rules
 

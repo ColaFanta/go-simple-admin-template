@@ -13,15 +13,15 @@ import (
 	l10n "fantacode/ecomm/internal/app/server/middleware"
 	"fantacode/ecomm/internal/app/server/query/gormq"
 	"fantacode/ecomm/internal/app/server/router/api/apicm"
-	"fantacode/ecomm/internal/app/server/ui/block"
-	"fantacode/ecomm/internal/app/server/ui/components/badge"
-	"fantacode/ecomm/internal/app/server/ui/components/button"
-	"fantacode/ecomm/internal/app/server/ui/components/card"
-	"fantacode/ecomm/internal/app/server/ui/components/form"
-	"fantacode/ecomm/internal/app/server/ui/components/icon"
-	"fantacode/ecomm/internal/app/server/ui/components/input"
-	"fantacode/ecomm/internal/app/server/ui/components/selectbox"
-	"fantacode/ecomm/internal/app/server/ui/components/table"
+	"fantacode/ecomm/internal/app/ui/block"
+	"fantacode/ecomm/internal/app/ui/components/badge"
+	"fantacode/ecomm/internal/app/ui/components/button"
+	"fantacode/ecomm/internal/app/ui/components/card"
+	"fantacode/ecomm/internal/app/ui/components/form"
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/components/input"
+	selectcomp "fantacode/ecomm/internal/app/ui/components/select"
+	"fantacode/ecomm/internal/app/ui/components/table"
 	"fmt"
 	opera "github.com/colafanta/go-opera"
 	"github.com/gofiber/fiber/v3"
@@ -144,7 +144,7 @@ func UserTableLayout(c fiber.Ctx) templ.Component {
 					}
 					templ_7745c5c3_Err = input.Input(input.Props{
 						ID:          "search",
-						Type:        input.TypeSearch,
+						Type:        "search",
 						Name:        "search",
 						Value:       c.Query("search"),
 						Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "InputUsernameEmailPhone"})),
@@ -1114,10 +1114,10 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = input.Input(input.Props{
 							ID:          "account_id",
-							Type:        input.TypeText,
+							Type:        "text",
 							Name:        "sub",
 							Value:       lo.Ternary(lo.IsEmpty(user.Sub), "", user.Sub.String()),
-							Readonly:    true,
+							ReadOnly:    true,
 							Disabled:    !isEditing,
 							Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "NoNeedToFill"})),
 						}).Render(ctx, templ_7745c5c3_Buffer)
@@ -1251,7 +1251,7 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = input.Input(input.Props{
 							ID:          "password",
-							Type:        input.TypePassword,
+							Type:        "password",
 							Name:        "password",
 							Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "EnterPassword"})),
 							Value:       opera.MaybeNilPtr(user.Password).OrEmpty(),
@@ -1320,7 +1320,7 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = input.Input(input.Props{
 							ID:          "email",
-							Type:        input.TypeEmail,
+							Type:        "email",
 							Name:        "email",
 							Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "EnterEmail"})),
 							Value:       opera.MaybeNilPtr(user.Email).OrEmpty(),
@@ -1389,7 +1389,7 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 						}
 						templ_7745c5c3_Err = input.Input(input.Props{
 							ID:          "phone_number",
-							Type:        input.TypeTel,
+							Type:        "tel",
 							Name:        "phone_number",
 							Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "EnterPhoneNumber"})),
 							Value:       opera.MaybeNilPtr(user.PhoneNumber).OrEmpty(),
@@ -1455,6 +1455,14 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
+						roleValue := ""
+						if user.Admin != nil {
+							roleValue = user.Admin.Role
+						}
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, " ")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
 						templ_7745c5c3_Var74 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 							templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 							templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
@@ -1479,7 +1487,7 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 									}()
 								}
 								ctx = templ.InitializeContext(ctx)
-								templ_7745c5c3_Err = selectbox.Value(selectbox.ValueProps{
+								templ_7745c5c3_Err = selectcomp.Value(selectcomp.ValueProps{
 									Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "SelectARole"})),
 								}).Render(ctx, templ_7745c5c3_Buffer)
 								if templ_7745c5c3_Err != nil {
@@ -1487,13 +1495,11 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 								}
 								return nil
 							})
-							templ_7745c5c3_Err = selectbox.Trigger(selectbox.TriggerProps{
-								Name: "role",
-							}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var75), templ_7745c5c3_Buffer)
+							templ_7745c5c3_Err = selectcomp.Trigger().Render(templ.WithChildren(ctx, templ_7745c5c3_Var75), templ_7745c5c3_Buffer)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, " ")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, " ")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
@@ -1545,9 +1551,8 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 											}
 											return nil
 										})
-										templ_7745c5c3_Err = selectbox.Item(selectbox.ItemProps{
-											Value:    role.Name,
-											Selected: opera.MaybeEmpty(user.Admin).IsSome() && user.Admin.Role == role.Name,
+										templ_7745c5c3_Err = selectcomp.Item(selectcomp.ItemProps{
+											Value: role.Name,
 										}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var78), templ_7745c5c3_Buffer)
 										if templ_7745c5c3_Err != nil {
 											return templ_7745c5c3_Err
@@ -1555,24 +1560,23 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 									}
 									return nil
 								})
-								templ_7745c5c3_Err = selectbox.Group().Render(templ.WithChildren(ctx, templ_7745c5c3_Var77), templ_7745c5c3_Buffer)
+								templ_7745c5c3_Err = selectcomp.Group().Render(templ.WithChildren(ctx, templ_7745c5c3_Var77), templ_7745c5c3_Buffer)
 								if templ_7745c5c3_Err != nil {
 									return templ_7745c5c3_Err
 								}
 								return nil
 							})
-							templ_7745c5c3_Err = selectbox.Content().Render(templ.WithChildren(ctx, templ_7745c5c3_Var76), templ_7745c5c3_Buffer)
+							templ_7745c5c3_Err = selectcomp.Content().Render(templ.WithChildren(ctx, templ_7745c5c3_Var76), templ_7745c5c3_Buffer)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							return nil
 						})
-						templ_7745c5c3_Err = selectbox.SelectBox(selectbox.Props{
-							Attributes: templ.Attributes{
-								"required": true,
-							},
-						},
-						).Render(templ.WithChildren(ctx, templ_7745c5c3_Var74), templ_7745c5c3_Buffer)
+						templ_7745c5c3_Err = selectcomp.Select(selectcomp.Props{
+							Name:         "role",
+							Required:     true,
+							DefaultValue: roleValue,
+						}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var74), templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -1582,7 +1586,7 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "<div class=\"my-6\"></div><div class=\"flex justify-center\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<div class=\"my-6\"></div><div class=\"flex justify-center\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -1615,7 +1619,7 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</div></form>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</div></form>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -1631,7 +1635,7 @@ func UserCuForm(c fiber.Ctx) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

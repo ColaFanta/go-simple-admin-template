@@ -3,14 +3,14 @@ package apicm
 import (
 	"fantacode/ecomm/internal/app/module/auth"
 	l10n "fantacode/ecomm/internal/app/server/middleware"
-	"fantacode/ecomm/internal/app/server/ui/block"
-	"fantacode/ecomm/internal/app/server/ui/components/avatar"
-	"fantacode/ecomm/internal/app/server/ui/components/breadcrumb"
-	"fantacode/ecomm/internal/app/server/ui/components/collapsible"
-	"fantacode/ecomm/internal/app/server/ui/components/dropdown"
-	"fantacode/ecomm/internal/app/server/ui/components/icon"
-	"fantacode/ecomm/internal/app/server/ui/components/sidebar"
-	"fantacode/ecomm/internal/app/server/ui/layout"
+	"fantacode/ecomm/internal/app/ui/block"
+	"fantacode/ecomm/internal/app/ui/components/avatar"
+	"fantacode/ecomm/internal/app/ui/components/breadcrumb"
+	"fantacode/ecomm/internal/app/ui/components/collapsible"
+	"fantacode/ecomm/internal/app/ui/components/dropdownmenu"
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/components/sidebar"
+	"fantacode/ecomm/internal/app/ui/layout"
 	opera "github.com/colafanta/go-opera"
 	"github.com/go-pkgz/auth/v2/token"
 	"github.com/gofiber/fiber/v3"
@@ -22,7 +22,7 @@ import (
 templ AdminLayout(c fiber.Ctx) {
 	{{ t := fiber.Locals[*i18n.Localizer](c, l10n.KeyI18nLocalizer) }}
 	@layout.BaseLayout() {
-		@sidebar.Layout() {
+		@sidebar.Provider() {
 			@sidebar.Sidebar(sidebar.Props{
 				Collapsible: sidebar.CollapsibleIcon,
 				Variant:     sidebar.VariantFloating,
@@ -78,14 +78,14 @@ templ AdminLayout(c fiber.Ctx) {
 						@sidebar.Menu() {
 							@sidebar.MenuItem() {
 								@collapsible.Collapsible(collapsible.Props{
-									Open: lo.Contains(
+															Open: lo.ToPtr(lo.Contains(
 										[]string{"skus", "inventories", "products", "variants"},
 										opera.MustHave(lo.Last(strings.Split(c.Path(), "/"))),
-									),
+															)),
 									Class: "group/collapsible w-full",
 								}) {
-									@collapsible.Trigger() {
 										@sidebar.MenuButton(sidebar.MenuButtonProps{
+											Attributes: collapsible.Trigger(ctx),
 											Tooltip: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "Products"})),
 										}) {
 											@icon.Package(icon.Props{Class: "size-4"})
@@ -94,7 +94,6 @@ templ AdminLayout(c fiber.Ctx) {
 												Class: "ml-auto size-4 transition-transform group-data-[tui-collapsible-state=open]/collapsible:rotate-90",
 											})
 										}
-									}
 									@collapsible.Content() {
 										@sidebar.MenuSub() {
 											@sidebar.MenuSubItem() {
@@ -135,14 +134,14 @@ templ AdminLayout(c fiber.Ctx) {
 						@sidebar.Menu() {
 							@sidebar.MenuItem() {
 								@collapsible.Collapsible(collapsible.Props{
-									Open: lo.Contains(
+															Open: lo.ToPtr(lo.Contains(
 										[]string{"users", "roles", "permissions"},
 										opera.MustHave(lo.Last(strings.Split(c.Path(), "/"))),
-									),
+															)),
 									Class: "group/collapsible w-full",
 								}) {
-									@collapsible.Trigger() {
 										@sidebar.MenuButton(sidebar.MenuButtonProps{
+											Attributes: collapsible.Trigger(ctx),
 											Tooltip: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "UsersAndRoles"})),
 										}) {
 											@icon.UserLock(icon.Props{Class: "size-4"})
@@ -186,16 +185,15 @@ templ AdminLayout(c fiber.Ctx) {
 								}
 							}
 						}
-					}
 				}
 				@sidebar.Footer() {
 					@sidebar.Menu() {
 						@sidebar.MenuItem() {
-							@dropdown.Dropdown() {
+							@dropdownmenu.DropdownMenu() {
 								{{ user := fiber.Locals[*token.User](c, auth.UserInfoKey) }}
-								@dropdown.Trigger() {
 									@sidebar.MenuButton(sidebar.MenuButtonProps{
 										Size: sidebar.MenuButtonSizeLg,
+										Attributes: dropdownmenu.Trigger(ctx),
 									}) {
 										@avatar.Avatar(avatar.Props{Class: "size-8 rounded-lg"}) {
 											@avatar.Image(avatar.ImageProps{
@@ -208,16 +206,15 @@ templ AdminLayout(c fiber.Ctx) {
 										</div>
 										@icon.ChevronsUpDown(icon.Props{Class: "ml-auto size-4"})
 									}
-								}
-								@dropdown.Content(dropdown.ContentProps{
-									Class:     "w-56",
-									Placement: dropdown.PlacementTopStart,
+								@dropdownmenu.Content(dropdownmenu.ContentProps{
+									Class: "w-56",
+									Side: dropdownmenu.SideTop,
 								}) {
-									@dropdown.Label() {
+									@dropdownmenu.Label() {
 										{ user.Name }
 									}
-									@dropdown.Separator()
-									@dropdown.Item(dropdown.ItemProps{
+									@dropdownmenu.Separator()
+									@dropdownmenu.Item(dropdownmenu.ItemProps{
 										Attributes: templ.Attributes{
 											"hx-post": "/auth/logout",
 											"_":       "on htmx:after:request set window.location.href to '/'",
@@ -251,7 +248,7 @@ templ AdminLayout(c fiber.Ctx) {
 									if i == 0 {
 									} else if i == len(strings.Split(c.Path(), "/"))-1 {
 										@breadcrumb.Item() {
-											@breadcrumb.Page(breadcrumb.ItemProps{Current: true}) {
+															@breadcrumb.Page() {
 												{ lo.LastOrEmpty(strings.Split(c.Path(), "/")) }
 											}
 										}

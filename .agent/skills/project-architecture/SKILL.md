@@ -34,7 +34,7 @@ When a framework-specific adapter needs a module dependency, resolve or construc
 
 - `cmd/admin` boots the application and composes dependencies.
 - `internal/app/server/router` owns HTTP route registration and page/API handlers.
-- `internal/app/server/ui` owns reusable templui components, layouts, embedded assets, and browser-facing scripts.
+- `internal/app/ui` owns reusable shadcn-templ components, layouts, embedded assets, and browser-facing scripts.
 - `internal/app/server/middleware` and `internal/app/server/service` own application-specific Fiber adapters and lifecycle services.
 - `internal/app/module` owns business concerns such as auth, RBAC, localization, models, and DAO access.
 - `internal/platform/http/fiber` owns neutral Fiber integration helpers and HTMX request utilities.

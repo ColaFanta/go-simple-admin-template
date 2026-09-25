@@ -12,7 +12,7 @@
 ## Placement Rules
 
 - Put a new admin feature under `internal/app/server/router/api/<feature>` and expose `New(i do.Injector) fiber.Router`.
-- Put reusable UI in `internal/app/server/ui`, not in a feature handler.
+- Put reusable UI in `internal/app/ui`, not in a feature handler.
 - Put persistent entities in `internal/app/module/dao/model`; generated query helpers belong under `internal/app/module/dao/gen`.
 - Put cross-request business behavior in `internal/app/module` services or the nearest existing domain package.
 - Put application-specific Fiber middleware and lifecycle services in `internal/app/server/middleware` and `internal/app/server/service`.

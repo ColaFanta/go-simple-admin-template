@@ -1,6 +1,6 @@
 # HTMX 4
 
-The shared script is loaded in `internal/app/server/ui/layout/base.templ` from the HTMX 4 CDN URL.
+The shared script is loaded in `internal/app/ui/layout/base.templ` from the HTMX 4 CDN URL.
 
 ## Migration Rules
 
