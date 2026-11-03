@@ -1,0 +1,68 @@
+package layout
+
+import (
+	"fantacode/ecomm/internal/app/ui/block"
+	"fantacode/ecomm/internal/app/ui/components"
+)
+
+templ BaseLayout() {
+	<!DOCTYPE html>
+	<html lang="en" class="h-full dark">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@components.Scripts()
+			@block.ThemeSwitcherScript()
+			<link href="/assets/css/output.css" rel="stylesheet"/>
+			<link href="/assets/css/gprogress.css" rel="stylesheet"/>
+			<script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0/dist/htmx.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc" crossorigin="anonymous"></script>
+			<script src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.93/dist/_hyperscript.min.js"></script>
+			<script>
+				htmx.config.implicitInheritance = true
+				htmx.config.noSwap = [204, 304, "4xx", "5xx"]
+
+				function getCookie(name) {
+					const value = `; ${document.cookie}`
+					const parts = value.split(`; ${name}=`)
+					if (parts.length === 2) return parts.pop().split(';').shift()
+					return null
+				}
+
+
+				htmx.on("htmx:config:request", (evt) => {
+					if (evt.detail.ctx.request.method && evt.detail.ctx.request.method.toUpperCase() === "GET") return
+					const xsrf = getCookie("XSRF-TOKEN")
+					if (!xsrf) return
+					evt.detail.ctx.request.headers["X-XSRF-TOKEN"] = xsrf
+				})
+
+				htmx.on("htmx:response:error",
+					(evt) => {
+						switch (evt.detail.ctx.response.status) {
+							case 401:
+								alert("Session expired: Please log in again.")
+								return
+							case 403:
+								alert("Access denied: You do not have permission to view this resource.")
+								return
+						}
+						if (evt.detail.ctx.response.status >= 400 && evt.detail.ctx.response.status < 500)
+							alert("Request error: Please check your input and try again.")
+						if (evt.detail.ctx.response.status >= 500)
+							alert("Server error: Please try again later.")
+					})
+				htmx.on("htmx:error", (evt) => {
+					alert("Network error: Please check your internet connection and try again.")
+				})
+				
+			</script>
+			<title>FantaCode Admin</title>
+		</head>
+		<body class="h-full" hx-indicator="#gprogress">
+			<div id="gprogress" class="gprogress" style="height: 3px; background-color: var(--border)">
+				<div class="g-indeterminate" style="background-color: var(--primary)"></div>
+			</div>
+			{ children... }
+		</body>
+	</html>
+}

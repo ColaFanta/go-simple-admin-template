@@ -1,0 +1,180 @@
+package inputotp
+
+import (
+	"context"
+	"strconv"
+
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/utils"
+)
+
+type ctxKey string
+
+const stateKey ctxKey = "inputotpState"
+
+type ctxState struct {
+	value string
+}
+
+func state(ctx context.Context) ctxState {
+	if s, ok := ctx.Value(stateKey).(ctxState); ok {
+		return s
+	}
+	return ctxState{}
+}
+
+type Props struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+	Value      string
+	Name       string
+	Form       string
+	// Pattern restricts input to a regular expression, e.g.
+	// inputotp.RegexpOnlyDigits (input-otp's REGEXP constants).
+	Pattern  string
+	Disabled bool
+	Required bool
+}
+
+// The pattern constants of the input-otp library.
+const (
+	RegexpOnlyDigits         = "^\\d+$"
+	RegexpOnlyChars          = "^[a-zA-Z]+$"
+	RegexpOnlyDigitsAndChars = "^[a-zA-Z0-9]+$"
+)
+
+type GroupProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+type SlotProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+	Index      int
+}
+
+type SeparatorProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+// InputOTP is the pendant of the input-otp library shadcn wraps: one real
+// input stretched invisibly over the whole container captures focus, typing
+// and paste, while the slots only render the characters and the fake caret.
+templ InputOTP(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	{{ ctx = context.WithValue(ctx, stateKey, ctxState{value: p.Value}) }}
+	<div
+		data-slot="input-otp"
+		data-tui-inputotp
+		if p.Pattern != "" {
+			data-tui-inputotp-pattern={ p.Pattern }
+		}
+		class={ utils.CN("gap-2 relative flex items-center has-disabled:opacity-50", p.Class) }
+		{ p.Attributes... }
+	>
+		{ children... }
+		<input
+			if p.ID != "" {
+				id={ p.ID }
+			}
+			data-tui-inputotp-input
+			type="text"
+			inputmode="numeric"
+			autocomplete="one-time-code"
+			spellcheck="false"
+			if p.Value != "" {
+				value={ p.Value }
+			}
+			if p.Name != "" {
+				name={ p.Name }
+			}
+			if p.Form != "" {
+				form={ p.Form }
+			}
+			disabled?={ p.Disabled }
+			required?={ p.Required }
+			class="absolute inset-y-0 left-0 h-full opacity-0 disabled:cursor-not-allowed"
+			style="width:calc(100% + 40px);clip-path:inset(0 40px 0 0)"
+		/>
+	</div>
+}
+
+templ Group(props ...GroupProps) {
+	{{ var p GroupProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		data-slot="input-otp-group"
+		class={ utils.CN("has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40 has-aria-invalid:border-destructive rounded-md has-aria-invalid:ring-3 flex items-center", p.Class) }
+		{ p.Attributes... }
+	>
+		{ children... }
+	</div>
+}
+
+templ Slot(props ...SlotProps) {
+	{{ var p SlotProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	{{
+		s := state(ctx)
+		char := ""
+		if p.Index >= 0 && p.Index < len(s.value) {
+			char = string(s.value[p.Index])
+		}
+	}}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		data-slot="input-otp-slot"
+		data-tui-inputotp-slot
+		data-tui-inputotp-index={ strconv.Itoa(p.Index) }
+		class={
+			utils.CN(
+				"dark:bg-input/30 border-input data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:ring-destructive/20 dark:data-[active=true]:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive size-9 border-y border-r text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md data-[active=true]:ring-3 relative flex items-center justify-center data-[active=true]:z-10",
+				p.Class,
+			),
+		}
+		{ p.Attributes... }
+	>
+		<span data-tui-inputotp-char>{ char }</span>
+		// input-otp only mounts the caret in the active empty slot; ours starts
+		// hidden and inputotp.js toggles hidden/flex.
+		<div data-tui-inputotp-caret class="pointer-events-none absolute inset-0 hidden items-center justify-center">
+			<div class="animate-caret-blink bg-foreground h-4 w-px duration-1000"></div>
+		</div>
+	</div>
+}
+
+templ Separator(props ...SeparatorProps) {
+	{{ var p SeparatorProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	<div
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		data-slot="input-otp-separator"
+		role="separator"
+		class={ utils.CN("[&_svg:not([class*='size-'])]:size-4 flex items-center", p.Class) }
+		{ p.Attributes... }
+	>
+		@icon.Minus()
+	</div>
+}

@@ -10,10 +10,10 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	l10n "fantacode/ecomm/internal/app/server/middleware"
-	"fantacode/ecomm/internal/app/server/ui/components/button"
-	"fantacode/ecomm/internal/app/server/ui/components/form"
-	"fantacode/ecomm/internal/app/server/ui/components/input"
-	"fantacode/ecomm/internal/app/server/ui/layout"
+	"fantacode/ecomm/internal/app/ui/components/button"
+	"fantacode/ecomm/internal/app/ui/components/form"
+	"fantacode/ecomm/internal/app/ui/components/input"
+	"fantacode/ecomm/internal/app/ui/layout"
 	opera "github.com/colafanta/go-opera"
 	"github.com/gofiber/fiber/v3"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -131,7 +131,7 @@ func SignUpPage(c fiber.Ctx) templ.Component {
 				templ_7745c5c3_Err = input.Input(input.Props{
 					ID:          "username-input",
 					Name:        "user",
-					Type:        input.TypeText,
+					Type:        "text",
 					Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "InputUsernameHere"})),
 					Attributes: templ.Attributes{
 						"required": true,
@@ -195,7 +195,7 @@ func SignUpPage(c fiber.Ctx) templ.Component {
 				templ_7745c5c3_Err = input.Input(input.Props{
 					ID:          "password-input",
 					Name:        "passwd",
-					Type:        input.TypePassword,
+					Type:        "password",
 					Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "InputPasswordHere"})),
 					Attributes: templ.Attributes{
 						"required":  true,
@@ -259,7 +259,7 @@ func SignUpPage(c fiber.Ctx) templ.Component {
 				templ_7745c5c3_Err = input.Input(input.Props{
 					ID:          "confirm-password-input",
 					Name:        "confirm-passwd",
-					Type:        input.TypePassword,
+					Type:        "password",
 					Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "InputPasswordAgainHere"})),
 					Attributes: templ.Attributes{
 						"hx-validate": "true",

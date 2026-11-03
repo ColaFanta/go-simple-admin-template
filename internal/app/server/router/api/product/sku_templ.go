@@ -13,15 +13,15 @@ import (
 	l10n "fantacode/ecomm/internal/app/server/middleware"
 	"fantacode/ecomm/internal/app/server/query/gormq"
 	"fantacode/ecomm/internal/app/server/router/api/apicm"
-	"fantacode/ecomm/internal/app/server/ui/block"
-	"fantacode/ecomm/internal/app/server/ui/components/badge"
-	"fantacode/ecomm/internal/app/server/ui/components/button"
-	"fantacode/ecomm/internal/app/server/ui/components/card"
-	"fantacode/ecomm/internal/app/server/ui/components/form"
-	"fantacode/ecomm/internal/app/server/ui/components/icon"
-	"fantacode/ecomm/internal/app/server/ui/components/input"
-	"fantacode/ecomm/internal/app/server/ui/components/table"
-	"fantacode/ecomm/internal/app/server/ui/components/tabs"
+	"fantacode/ecomm/internal/app/ui/block"
+	"fantacode/ecomm/internal/app/ui/components/badge"
+	"fantacode/ecomm/internal/app/ui/components/button"
+	"fantacode/ecomm/internal/app/ui/components/card"
+	"fantacode/ecomm/internal/app/ui/components/form"
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/components/input"
+	"fantacode/ecomm/internal/app/ui/components/table"
+	"fantacode/ecomm/internal/app/ui/components/tabs"
 	"fmt"
 	opera "github.com/colafanta/go-opera"
 	"github.com/gofiber/fiber/v3"
@@ -141,7 +141,7 @@ func SkuTableLayout(c fiber.Ctx) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = input.Input(input.Props{ID: "search", Type: input.TypeSearch, Name: "search", Value: c.Query("search"), Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "SkuContains"}))}).Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = input.Input(input.Props{ID: "search", Type: "search", Name: "search", Value: c.Query("search"), Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "SkuContains"}))}).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -1696,7 +1696,7 @@ func SkuCuForm(c fiber.Ctx) templ.Component {
 								}
 								return nil
 							})
-							templ_7745c5c3_Err = tabs.Trigger(tabs.TriggerProps{Value: "phone", IsActive: specType == "phone"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var93), templ_7745c5c3_Buffer)
+							templ_7745c5c3_Err = tabs.Trigger(tabs.TriggerProps{Value: "phone"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var93), templ_7745c5c3_Buffer)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
@@ -1727,7 +1727,7 @@ func SkuCuForm(c fiber.Ctx) templ.Component {
 								}
 								return nil
 							})
-							templ_7745c5c3_Err = tabs.Trigger(tabs.TriggerProps{Value: "pc", IsActive: specType == "pc"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var95), templ_7745c5c3_Buffer)
+							templ_7745c5c3_Err = tabs.Trigger(tabs.TriggerProps{Value: "pc"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var95), templ_7745c5c3_Buffer)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
@@ -2028,7 +2028,7 @@ func SkuCuForm(c fiber.Ctx) templ.Component {
 							}
 							return nil
 						})
-						templ_7745c5c3_Err = tabs.Content(tabs.ContentProps{Value: "phone", IsActive: specType == "phone"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var97), templ_7745c5c3_Buffer)
+						templ_7745c5c3_Err = tabs.Content(tabs.ContentProps{Value: "phone"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var97), templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -2217,13 +2217,13 @@ func SkuCuForm(c fiber.Ctx) templ.Component {
 							}
 							return nil
 						})
-						templ_7745c5c3_Err = tabs.Content(tabs.ContentProps{Value: "pc", IsActive: specType == "pc"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var113), templ_7745c5c3_Buffer)
+						templ_7745c5c3_Err = tabs.Content(tabs.ContentProps{Value: "pc"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var113), templ_7745c5c3_Buffer)
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						return nil
 					})
-					templ_7745c5c3_Err = tabs.Tabs(tabs.Props{ID: "spec-tabs"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var91), templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = tabs.Tabs(tabs.Props{ID: "spec-tabs", DefaultValue: specType}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var91), templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

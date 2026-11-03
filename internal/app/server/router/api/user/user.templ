@@ -5,15 +5,15 @@ import (
 	l10n "fantacode/ecomm/internal/app/server/middleware"
 	"fantacode/ecomm/internal/app/server/query/gormq"
 	"fantacode/ecomm/internal/app/server/router/api/apicm"
-	"fantacode/ecomm/internal/app/server/ui/block"
-	"fantacode/ecomm/internal/app/server/ui/components/badge"
-	"fantacode/ecomm/internal/app/server/ui/components/button"
-	"fantacode/ecomm/internal/app/server/ui/components/card"
-	"fantacode/ecomm/internal/app/server/ui/components/form"
-	"fantacode/ecomm/internal/app/server/ui/components/icon"
-	"fantacode/ecomm/internal/app/server/ui/components/input"
-	"fantacode/ecomm/internal/app/server/ui/components/selectbox"
-	"fantacode/ecomm/internal/app/server/ui/components/table"
+	"fantacode/ecomm/internal/app/ui/block"
+	"fantacode/ecomm/internal/app/ui/components/badge"
+	"fantacode/ecomm/internal/app/ui/components/button"
+	"fantacode/ecomm/internal/app/ui/components/card"
+	"fantacode/ecomm/internal/app/ui/components/form"
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/components/input"
+	selectcomp "fantacode/ecomm/internal/app/ui/components/select"
+	"fantacode/ecomm/internal/app/ui/components/table"
 	"fmt"
 	opera "github.com/colafanta/go-opera"
 	"github.com/gofiber/fiber/v3"
@@ -38,7 +38,7 @@ templ UserTableLayout(c fiber.Ctx) {
 						<div class="flex-1">
 							@input.Input(input.Props{
 								ID:          "search",
-								Type:        input.TypeSearch,
+								Type:        "search",
 								Name:        "search",
 								Value:       c.Query("search"),
 								Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "InputUsernameEmailPhone"})),
@@ -207,10 +207,10 @@ templ UserCuForm(c fiber.Ctx) {
 							}
 							@input.Input(input.Props{
 								ID:          "account_id",
-								Type:        input.TypeText,
+								Type:        "text",
 								Name:        "sub",
 								Value:       lo.Ternary(lo.IsEmpty(user.Sub), "", user.Sub.String()),
-								Readonly:    true,
+								ReadOnly:    true,
 								Disabled:    !isEditing,
 								Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "NoNeedToFill"})),
 							})
@@ -244,7 +244,7 @@ templ UserCuForm(c fiber.Ctx) {
 							}
 							@input.Input(input.Props{
 								ID:          "password",
-								Type:        input.TypePassword,
+								Type:        "password",
 								Name:        "password",
 								Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "EnterPassword"})),
 								Value:       opera.MaybeNilPtr(user.Password).OrEmpty(),
@@ -263,7 +263,7 @@ templ UserCuForm(c fiber.Ctx) {
 							}
 							@input.Input(input.Props{
 								ID:          "email",
-								Type:        input.TypeEmail,
+								Type:        "email",
 								Name:        "email",
 								Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "EnterEmail"})),
 								Value:       opera.MaybeNilPtr(user.Email).OrEmpty(),
@@ -282,7 +282,7 @@ templ UserCuForm(c fiber.Ctx) {
 							}
 							@input.Input(input.Props{
 								ID:          "phone_number",
-								Type:        input.TypeTel,
+								Type:        "tel",
 								Name:        "phone_number",
 								Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "EnterPhoneNumber"})),
 								Value:       opera.MaybeNilPtr(user.PhoneNumber).OrEmpty(),
@@ -298,25 +298,25 @@ templ UserCuForm(c fiber.Ctx) {
 							}) {
 								{ opera.Must(t.LocalizeMessage(&i18n.Message{ID: "Role"})) }
 							}
-							@selectbox.SelectBox(selectbox.Props{
-								Attributes: templ.Attributes{
-									"required": true,
-								},
-							},
-							) {
-								@selectbox.Trigger(selectbox.TriggerProps{
-									Name: "role",
-								}) {
-									@selectbox.Value(selectbox.ValueProps{
+							{{ roleValue := "" }}
+							if user.Admin != nil {
+								{{ roleValue = user.Admin.Role }}
+							}
+							@selectcomp.Select(selectcomp.Props{
+								Name:         "role",
+								Required:     true,
+								DefaultValue: roleValue,
+							}) {
+								@selectcomp.Trigger() {
+									@selectcomp.Value(selectcomp.ValueProps{
 										Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "SelectARole"})),
 									})
 								}
-								@selectbox.Content() {
-									@selectbox.Group() {
+								@selectcomp.Content() {
+									@selectcomp.Group() {
 										for _, role := range getAllRoles(c).Yield() {
-											@selectbox.Item(selectbox.ItemProps{
-												Value:    role.Name,
-												Selected: opera.MaybeEmpty(user.Admin).IsSome() && user.Admin.Role == role.Name,
+											@selectcomp.Item(selectcomp.ItemProps{
+												Value: role.Name,
 											}) {
 												{ role.Name }
 											}

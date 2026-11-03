@@ -8,7 +8,7 @@ import (
 	_ "fantacode/ecomm/internal/app/server/router/docs"
 	"fantacode/ecomm/internal/app/server/router/misc"
 	"fantacode/ecomm/internal/app/server/service"
-	"fantacode/ecomm/internal/app/server/ui/assets"
+	"fantacode/ecomm/internal/app/ui/assets"
 	"fantacode/ecomm/internal/platform/http/fiber/handler"
 
 	"github.com/casbin/casbin/v3"

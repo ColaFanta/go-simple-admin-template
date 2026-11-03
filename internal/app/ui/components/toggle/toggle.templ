@@ -1,0 +1,183 @@
+package toggle
+
+import (
+	"context"
+	"strconv"
+
+	"fantacode/ecomm/internal/app/ui/utils"
+)
+
+type Variant string
+type Size string
+
+const (
+	VariantDefault Variant = "default"
+	VariantOutline Variant = "outline"
+)
+
+const (
+	SizeDefault Size = "default"
+	SizeSm      Size = "sm"
+	SizeLg      Size = "lg"
+)
+
+type ctxKey string
+
+const (
+	variantKey    ctxKey = "toggleVariant"
+	sizeKey       ctxKey = "toggleSize"
+	spacingKey    ctxKey = "toggleSpacing"
+	groupStateKey ctxKey = "toggleGroupState"
+)
+
+type groupState struct {
+	initialized bool
+	controlled  bool
+	pressed     map[string]bool
+}
+
+// WithGroupDefaults stores a group's variant/size/spacing in the context so
+// child Toggles inherit them and style themselves as group items. Used by the
+// togglegroup component.
+func WithGroupDefaults(ctx context.Context, variant Variant, size Size, spacing int, values []string, initialized bool, controlled bool) context.Context {
+	ctx = context.WithValue(ctx, variantKey, variant)
+	ctx = context.WithValue(ctx, sizeKey, size)
+	ctx = context.WithValue(ctx, spacingKey, spacing)
+	pressed := make(map[string]bool, len(values))
+	for _, value := range values {
+		pressed[value] = true
+	}
+	ctx = context.WithValue(ctx, groupStateKey, groupState{initialized: initialized, controlled: controlled, pressed: pressed})
+	return ctx
+}
+
+func variantFromCtx(ctx context.Context) Variant {
+	if v, ok := ctx.Value(variantKey).(Variant); ok && v != "" {
+		return v
+	}
+	return VariantDefault
+}
+
+func sizeFromCtx(ctx context.Context) Size {
+	if s, ok := ctx.Value(sizeKey).(Size); ok && s != "" {
+		return s
+	}
+	return SizeDefault
+}
+
+// inGroup reports whether the toggle renders inside a ToggleGroup, and with
+// which spacing.
+func spacingFromCtx(ctx context.Context) (int, bool) {
+	s, ok := ctx.Value(spacingKey).(int)
+	return s, ok
+}
+
+func pressedFromGroup(ctx context.Context, value string) (pressed bool, initialized bool, controlled bool) {
+	state, ok := ctx.Value(groupStateKey).(groupState)
+	if !ok {
+		return false, false, false
+	}
+	return state.pressed[value], state.initialized, state.controlled
+}
+
+type Props struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+	Variant    Variant
+	Size       Size
+	// Pressed is the controlled pressed state. Use DefaultPressed when the
+	// browser should own the state after the initial render.
+	Pressed        *bool
+	DefaultPressed bool
+	Disabled       bool
+	// Value identifies the toggle within a group (exposed in the toggle-change event).
+	Value string
+}
+
+func initialPressed(p Props) bool {
+	if p.Pressed != nil {
+		return *p.Pressed
+	}
+	return p.DefaultPressed
+}
+
+// 1:1 base/ui/toggle.tsx: structure lives here, the look comes from the
+// active style-*.css via the classes.
+const baseClasses = "hover:text-foreground aria-pressed:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive gap-1 rounded-md text-sm font-medium transition-[color,box-shadow] [&_svg:not([class*='size-'])]:size-4 group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+
+func variantClasses(v Variant) string {
+	switch v {
+	case VariantOutline:
+		return "border-input hover:bg-muted border bg-transparent shadow-xs"
+	default:
+		return "bg-transparent"
+	}
+}
+
+func sizeClasses(s Size) string {
+	switch s {
+	case SizeSm:
+		return "h-8 min-w-8 px-2.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5"
+	case SizeLg:
+		return "h-10 min-w-10 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2"
+	default:
+		return "h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2"
+	}
+}
+
+// groupItemClasses is the verbatim ToggleGroupItem class string from
+// base/ui/toggle-group.tsx.
+func groupItemClasses() string {
+	return "data-pressed:bg-muted group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-1.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-1.5 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-md group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-md group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-md group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-md shrink-0 focus:z-10 focus-visible:z-10 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t"
+}
+
+templ Toggle(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.Variant == "" {
+		{{ p.Variant = variantFromCtx(ctx) }}
+	}
+	if p.Size == "" {
+		{{ p.Size = sizeFromCtx(ctx) }}
+	}
+	{{ spacing, inGroup := spacingFromCtx(ctx) }}
+	{{ pressed := initialPressed(p) }}
+	{{ groupPressed, groupInitialized, groupControlled := pressedFromGroup(ctx, p.Value) }}
+	if groupInitialized {
+		{{ pressed = groupPressed }}
+	}
+	<button
+		type="button"
+		if _, ok := p.Attributes["tabindex"]; !ok {
+			tabindex="0"
+		}
+		if inGroup {
+			data-slot="toggle-group-item"
+			data-variant={ string(p.Variant) }
+			data-size={ string(p.Size) }
+			data-spacing={ strconv.Itoa(spacing) }
+		} else {
+			data-slot="toggle"
+		}
+		if p.ID != "" {
+			id={ p.ID }
+		}
+		data-tui-toggle
+		if p.Value != "" {
+			data-tui-toggle-value={ p.Value }
+		}
+		aria-pressed={ strconv.FormatBool(pressed) }
+		if pressed {
+			data-pressed
+		}
+		data-tui-toggle-controlled?={ p.Pressed != nil || groupControlled }
+		disabled?={ p.Disabled }
+		class={ utils.CN(map[string]bool{groupItemClasses(): inGroup}, baseClasses, variantClasses(p.Variant), sizeClasses(p.Size), p.Class) }
+		{ p.Attributes... }
+	>
+		{ children... }
+	</button>
+}

@@ -1,0 +1,167 @@
+package hovercard
+
+import (
+	"context"
+	"strconv"
+
+	"fantacode/ecomm/internal/app/ui/utils"
+)
+
+type Side string
+
+const (
+	SideTop    Side = "top"
+	SideRight  Side = "right"
+	SideBottom Side = "bottom"
+	SideLeft   Side = "left"
+)
+
+type Align string
+
+const (
+	AlignStart  Align = "start"
+	AlignCenter Align = "center"
+	AlignEnd    Align = "end"
+)
+
+type ctxKey string
+
+const stateKey ctxKey = "hovercardState"
+
+type ctxState struct {
+	id          string
+	initialOpen bool
+	controlled  bool
+}
+
+type delaysKey struct{}
+
+type delays struct {
+	open  int
+	close int
+}
+
+func cardID(ctx context.Context) string {
+	if state, ok := ctx.Value(stateKey).(ctxState); ok {
+		return state.id
+	}
+	return ""
+}
+
+// Trigger returns the attributes that turn any element into the hover card
+// trigger — the asChild equivalent: no wrapper element.
+func Trigger(ctx context.Context) templ.Attributes {
+	return templ.Attributes{
+		"data-tui-hovercard-trigger": true,
+		"data-tui-hovercard-for":     cardID(ctx),
+	}
+}
+
+type Props struct {
+	ID          string
+	Open        *bool
+	DefaultOpen bool
+	// Delay is the hover intent before showing, in ms. Defaults to 600 like Base UI.
+	Delay int
+	// CloseDelay is the grace period before hiding, in ms. Defaults to 300.
+	CloseDelay int
+}
+
+func initialOpen(p Props) bool {
+	if p.Open != nil {
+		return *p.Open
+	}
+	return p.DefaultOpen
+}
+
+type ContentProps struct {
+	Class      string
+	Attributes templ.Attributes
+	// Side of the trigger the card opens on. Defaults to bottom; flips
+	// automatically when there is no room.
+	Side Side
+	// Align along the trigger edge. Defaults to center.
+	Align Align
+	// SideOffset is the gap to the trigger in px. Defaults to 4.
+	SideOffset int
+	// AlignOffset shifts the card along the aligned edge in px. Defaults
+	// to 4 (Base UI); only applies with Align start or end.
+	AlignOffset int
+}
+
+// HoverCard renders no element: it only generates the id that links Trigger
+// and Content (via ctx), so the trigger stays a direct child of its layout.
+templ HoverCard(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.ID == "" {
+		{{ p.ID = utils.RandomID() }}
+	}
+	if p.Delay == 0 {
+		{{ p.Delay = 600 }}
+	}
+	if p.CloseDelay == 0 {
+		{{ p.CloseDelay = 300 }}
+	}
+	{{ ctx = context.WithValue(ctx, stateKey, ctxState{id: p.ID, initialOpen: initialOpen(p), controlled: p.Open != nil}) }}
+	{{ ctx = context.WithValue(ctx, delaysKey{}, delays{open: p.Delay, close: p.CloseDelay}) }}
+	{ children... }
+}
+
+templ Content(props ...ContentProps) {
+	{{ var p ContentProps }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	if p.Side == "" {
+		{{ p.Side = SideBottom }}
+	}
+	if p.Align == "" {
+		{{ p.Align = AlignCenter }}
+	}
+	if p.SideOffset == 0 {
+		{{ p.SideOffset = 4 }}
+	}
+	if p.AlignOffset == 0 {
+		{{ p.AlignOffset = 4 }}
+	}
+	{{ d, _ := ctx.Value(delaysKey{}).(delays) }}
+	{{ s, _ := ctx.Value(stateKey).(ctxState) }}
+	// Hidden until the script portals it to <body> on open, so the SSRd
+	// content never participates in layout or sibling CSS.
+	<div data-tui-hovercard-portal hidden>
+		<div
+			id={ cardID(ctx) }
+			data-slot="hover-card-content"
+			data-tui-hovercard-content
+			data-tui-hovercard-initial-open={ strconv.FormatBool(s.initialOpen) }
+			data-tui-hovercard-controlled?={ s.controlled }
+			data-tui-hovercard-side={ string(p.Side) }
+			data-tui-hovercard-align={ string(p.Align) }
+			data-tui-hovercard-side-offset={ strconv.Itoa(p.SideOffset) }
+			data-tui-hovercard-align-offset={ strconv.Itoa(p.AlignOffset) }
+			data-tui-hovercard-delay={ strconv.Itoa(d.open) }
+			data-tui-hovercard-close-delay={ strconv.Itoa(d.close) }
+			data-closed
+			hidden
+			data-tui-portal
+			class={
+				utils.CN(
+					// 1:1 base/ui/hover-card.tsx HoverCardContent, the look comes from
+					// (animations key on Base UI's data-open/data-closed attributes).
+					// origin-(--transform-origin) becomes our JS variable name.
+					"data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 bg-popover text-popover-foreground w-64 rounded-lg p-4 text-sm shadow-md ring-1 duration-100 data-[side=inline-start]:slide-in-from-right-2 data-[side=inline-end]:slide-in-from-left-2 z-50 origin-(--tui-hovercard-transform-origin) outline-hidden",
+					// Native [popover] resets plus JS wiring: the popup stays mounted
+					// after animate-out until hidePopover runs.
+					"absolute inset-auto left-0 top-0 m-0 overflow-visible data-closed:fill-mode-forwards",
+					p.Class,
+				),
+			}
+			{ p.Attributes... }
+		>
+			{ children... }
+		</div>
+	</div>
+}

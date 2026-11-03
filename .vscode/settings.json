@@ -27,6 +27,9 @@
     "--fast-only"
   ],
   "go.lintTool": "golangci-lint-v2",
+  "json.schemaDownload.trustedDomains": {
+    "https://shadcn-templ.com/schema/": true
+  },
   "tailwindCSS.includeLanguages": {
     "templ": "html"
   },

@@ -5,15 +5,15 @@ import (
 	l10n "fantacode/ecomm/internal/app/server/middleware"
 	"fantacode/ecomm/internal/app/server/query/gormq"
 	"fantacode/ecomm/internal/app/server/router/api/apicm"
-	"fantacode/ecomm/internal/app/server/ui/block"
-	"fantacode/ecomm/internal/app/server/ui/components/badge"
-	"fantacode/ecomm/internal/app/server/ui/components/button"
-	"fantacode/ecomm/internal/app/server/ui/components/card"
-	"fantacode/ecomm/internal/app/server/ui/components/form"
-	"fantacode/ecomm/internal/app/server/ui/components/icon"
-	"fantacode/ecomm/internal/app/server/ui/components/input"
-	"fantacode/ecomm/internal/app/server/ui/components/table"
-	"fantacode/ecomm/internal/app/server/ui/components/tabs"
+	"fantacode/ecomm/internal/app/ui/block"
+	"fantacode/ecomm/internal/app/ui/components/badge"
+	"fantacode/ecomm/internal/app/ui/components/button"
+	"fantacode/ecomm/internal/app/ui/components/card"
+	"fantacode/ecomm/internal/app/ui/components/form"
+	"fantacode/ecomm/internal/app/ui/components/icon"
+	"fantacode/ecomm/internal/app/ui/components/input"
+	"fantacode/ecomm/internal/app/ui/components/table"
+	"fantacode/ecomm/internal/app/ui/components/tabs"
 	"fmt"
 	opera "github.com/colafanta/go-opera"
 	"github.com/gofiber/fiber/v3"
@@ -35,7 +35,7 @@ templ SkuTableLayout(c fiber.Ctx) {
 					}
 					@form.ItemFlex(form.ItemProps{Class: "w-full"}) {
 						<div class="flex-1">
-							@input.Input(input.Props{ID: "search", Type: input.TypeSearch, Name: "search", Value: c.Query("search"), Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "SkuContains"}))})
+							@input.Input(input.Props{ID: "search", Type: "search", Name: "search", Value: c.Query("search"), Placeholder: opera.Must(t.LocalizeMessage(&i18n.Message{ID: "SkuContains"}))})
 						</div>
 						@button.Button(button.Props{Size: button.SizeIcon, Variant: button.VariantSecondary, Type: button.TypeSubmit}) {
 							@icon.Search()
@@ -280,16 +280,16 @@ templ SkuCuForm(c fiber.Ctx) {
 						}
 						<div class="my-6"></div>
 						<h2 class="text-lg font-semibold mb-3">{ opera.Must(t.LocalizeMessage(&i18n.Message{ID: "SpecificationDetails"})) }</h2>
-						@tabs.Tabs(tabs.Props{ID: "spec-tabs"}) {
+						@tabs.Tabs(tabs.Props{ID: "spec-tabs", DefaultValue: specType}) {
 							@tabs.List() {
-								@tabs.Trigger(tabs.TriggerProps{Value: "phone", IsActive: specType == "phone"}) {
+								@tabs.Trigger(tabs.TriggerProps{Value: "phone"}) {
 									{ opera.Must(t.LocalizeMessage(&i18n.Message{ID: "PhoneSpec"})) }
 								}
-								@tabs.Trigger(tabs.TriggerProps{Value: "pc", IsActive: specType == "pc"}) {
+								@tabs.Trigger(tabs.TriggerProps{Value: "pc"}) {
 									{ opera.Must(t.LocalizeMessage(&i18n.Message{ID: "PCSpec"})) }
 								}
 							}
-							@tabs.Content(tabs.ContentProps{Value: "phone", IsActive: specType == "phone"}) {
+							@tabs.Content(tabs.ContentProps{Value: "phone"}) {
 								<div class="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
 									@form.Item() {
 										@form.Label(form.LabelProps{For: "phone_processor"}) {
@@ -323,7 +323,7 @@ templ SkuCuForm(c fiber.Ctx) {
 									}
 								</div>
 							}
-							@tabs.Content(tabs.ContentProps{Value: "pc", IsActive: specType == "pc"}) {
+							@tabs.Content(tabs.ContentProps{Value: "pc"}) {
 								<div class="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
 									@form.Item() {
 										@form.Label(form.LabelProps{For: "pc_processor"}) {
